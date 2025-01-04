@@ -20,6 +20,7 @@ public class Model {
 
     public String getHtml() {
         siteHtml = """
+            <body>
             <div>
                 <h1>Welcome to Canvas Rendering</h1>
                 <h2>A Simple HTML Renderer</h2>
@@ -48,6 +49,7 @@ public class Model {
                 <p>Here is an image:</p>
                 <img src="https://gratisography.com/wp-content/uploads/2024/10/gratisography-cool-cat-800x525.jpg">
             </div>
+            </body>
         """;
         return siteHtml;
     }

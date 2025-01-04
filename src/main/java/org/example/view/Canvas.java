@@ -8,18 +8,36 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Canvas extends JPanel {
+    private final Map<String, Font> tagFonts = Map.of(
+            "p", new Font("Serif", Font.PLAIN, 16),
+            "em", new Font("Serif", Font.ITALIC, 16),
+            "h1", new Font("Serif", Font.BOLD, 32),
+            "h2", new Font("Serif", Font.BOLD, 28),
+            "h3", new Font("Serif", Font.BOLD, 24),
+            "strong", new Font("Serif", Font.BOLD, 16),
+            "span", new Font("Serif", Font.PLAIN, 16),
+            "a", new Font("Serif", Font.PLAIN, 16),
+            "li", new Font("Serif", Font.PLAIN, 16)
+    );
     private Model model;
     private HtmlElement root;
+    private int x;
+    private int y;
+    private String parentTag;
+
 
     public Canvas(Model model) {
         this.model = model;
         setBackground(Color.WHITE);
     }
+
 
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
@@ -30,7 +48,10 @@ public class Canvas extends JPanel {
 
         // Рендерим дерево HTML
         for (HtmlElement child : root.getChildren()) {
-            y = renderElement(g2d, child, x, y);
+            if (child.getTag().equals("body")){
+                System.out.println(child.getTag());
+                y = renderElement(g2d, child, x, y, child.getTag());
+            }
         }
     }
 
@@ -39,104 +60,21 @@ public class Canvas extends JPanel {
         int blockPadding = 10;
         int defaultWidth = 400;
 
-        if (element.getContent().isEmpty() && !element.getChildren().isEmpty()) {
-            for (HtmlElement child : element.getChildren()) {
-                y = renderElement(g2d, child, x, y, element.getTag());
-            }
+        if (element.getTag().equals("p") || element.getTag().equals("em") || element.getTag().equals("h2") || element.getTag().equals("li") || element.getTag().equals("strong") || element.getTag().equals("a") || element.getTag().equals("h1") || element.getTag().equals("h3")) {
+            Map<Integer, Integer> xy = renderText(g2d, element, x, y, parentTag, true);
+            x = xy.get(0);  // Получаем новое значение x
+            y = xy.get(1);  // Получаем новое значение y
             return y;
         }
-
-        String tagToUse = element.getTag().equals("text") ? parentTag : element.getTag();
-
-        switch (tagToUse) {
-            case "h1":
-                g2d.setFont(new Font("Serif", Font.BOLD, 32));
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(element.getContent(), x, y);
-                y += lineHeight + 20;
-                break;
-
-            case "h2":
-                g2d.setFont(new Font("Serif", Font.BOLD, 28));
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(element.getContent(), x, y);
-                y += lineHeight + 15;
-                break;
-
-            case "h3":
-                g2d.setFont(new Font("Serif", Font.BOLD, 24));
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(element.getContent(), x, y);
-                y += lineHeight + 10;
-                break;
-
-            case "p":
-                g2d.setFont(new Font("Serif", Font.PLAIN, 16));
-                g2d.setColor(Color.DARK_GRAY);
-                g2d.drawString(element.getContent(), x, y);
-                y += lineHeight + blockPadding;
-                break;
-
-            case "span":
-                g2d.setFont(new Font("Serif", Font.PLAIN, 16));
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(element.getContent(), x, y);
-                y += lineHeight;
-                break;
-
-            case "a":
-                g2d.setFont(new Font("Serif", Font.PLAIN, 16));
-                g2d.setColor(Color.BLUE);
-                g2d.drawString(element.getContent(), x, y);
-
-                FontMetrics fm = g2d.getFontMetrics();
-                int linkWidth = fm.stringWidth(element.getContent());
-                g2d.drawLine(x, y + 2, x + linkWidth, y + 2);
-
-                y += lineHeight;
-                break;
-
-            case "ul":
-                for (HtmlElement child : element.getChildren()) {
-                    y = renderElement(g2d, child, x + blockPadding, y, "li");
-                }
-                y += blockPadding;
-                break;
-
-            case "li":
-                g2d.setFont(new Font("Serif", Font.PLAIN, 16));
-                g2d.setColor(Color.BLACK);
-                g2d.drawString("• " + element.getContent(), x, y);
-                y += lineHeight;
-                break;
-
+        String tagToUse2 = element.getTag().equals("text") ? parentTag : element.getTag();
+        switch (tagToUse2) {
             case "div":
-                g2d.setColor(Color.WHITE);
-                g2d.fillRect(x, y, defaultWidth, lineHeight + blockPadding);
+                System.out.println("I AM HERE HGCVSHGVCHGSGHCVGDV");
+                g2d.setColor(Color.BLUE);
+                g2d.fillRect(x, y -10, defaultWidth, lineHeight + blockPadding +20);
                 g2d.setColor(Color.BLACK);
                 y += blockPadding;
-
-//                for (HtmlElement child : element.getChildren()) {
-//                    y = renderElement(g2d, child, x + blockPadding, y, "div");
-//                }
-
-                y += blockPadding;
                 break;
-
-            case "strong":
-                g2d.setFont(new Font("Serif", Font.BOLD, 16));
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(element.getContent(), x, y);
-                y += lineHeight;
-                break;
-
-            case "em":
-                g2d.setFont(new Font("Serif", Font.ITALIC, 16));
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(element.getContent(), x, y);
-                y += lineHeight;
-                break;
-
             case "img":
                 try {
                     URL imgUrl = new URL(element.getContent());
@@ -150,19 +88,100 @@ public class Canvas extends JPanel {
                 }
                 break;
 
-            default:
-                g2d.setFont(new Font("Serif", Font.PLAIN, 16));
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(element.getContent(), x, y);
-                y += lineHeight;
-                break;
+        }
+        if (element.getContent().isEmpty() && !element.getChildren().isEmpty()) {
+            for (HtmlElement child : element.getChildren()) {
+                System.out.println(child.getTag());
+                y = renderElement(g2d, child, x, y, element.getTag());
+            }
+            return y;
         }
 
         return y;
     }
 
-    private int renderElement(Graphics2D g2d, HtmlElement element, int x, int y) {
-        return renderElement(g2d, element, x, y, "root");
+    private Map<Integer, Integer> renderText(Graphics g, HtmlElement element, int X, int Y, String parentTag, boolean isFirstTime) {
+        if (isFirstTime){
+            this.x = X;
+            this.y = Y;
+            this.parentTag = element.getTag();
+        }
+        int lineHeight = 20;
+        Map<Integer, Integer> coordinates = new HashMap<>();
+
+        for (HtmlElement child : element.getChildren()) {
+            String tagToUse2 = child.getTag().equals("text") ? element.getTag() : child.getTag();
+            switch (tagToUse2) {
+                case "li":
+                    if (isFirstTime){
+                        g.setFont(new Font("Serif", Font.PLAIN, 16));
+                        FontMetrics fmLi = g.getFontMetrics();
+                        g.setColor(Color.BLACK);
+                        g.drawString("• " + child.getContent(), x, y);
+                        x += fmLi.stringWidth("• " + child.getContent()) + 5;
+                        isFirstTime = false;
+                    } else {
+                        renderText2(g, child, tagToUse2);
+                    }
+                    break;
+                default:
+                    renderText2(g, child, tagToUse2);
+                    break;
+            }
+        }
+
+        // Возвращаем координаты
+        coordinates.put(0, x);
+        coordinates.put(1, y + lineHeight);
+        return coordinates;
+    }
+
+    public void renderLink(Graphics g, HtmlElement child) {
+        String content = child.getContent().trim();
+        g.setColor(Color.BLUE);
+        g.drawString(content, x, y);
+        FontMetrics fmLink = g.getFontMetrics();
+        int linkWidth = fmLink.stringWidth(content);
+        g.drawLine(x, y + 2, x + linkWidth, y + 2);
+        x += linkWidth + 5;
+    }
+
+    public void renderText2(Graphics g, HtmlElement element, String tag){
+        Font baseFont = tagFonts.get(tag);
+
+        g.setFont(baseFont.deriveFont((float) tagFonts.get(parentTag).getSize()));
+        if (tag.equals("h1") || tag.equals("h2") || tag.equals("h3")) {
+            g.setFont(baseFont.deriveFont((float) tagFonts.get(tag).getSize()));
+        }
+
+        FontMetrics fmSpan = g.getFontMetrics();
+        for (HtmlElement child : element.getChildren()) {
+
+            if (!child.getTag().equals(tag)){
+                renderText(g, child, x, y, child.getTag(), false);
+            }
+
+            String contentEm = child.getContent().trim();
+            if (tag.equals("a")){
+                renderLink(g, child);
+            } else {
+                g.setColor(Color.BLACK);
+                g.drawString(contentEm, x, y);
+            }
+            x += fmSpan.stringWidth(contentEm) + 5;
+        }
+        if (element.getChildren().isEmpty()) {
+
+            String contentEm = element.getContent().trim();
+            g.drawString(contentEm, x, y);
+            x += fmSpan.stringWidth(contentEm) + 5;
+
+            if (tag.equals("a")){
+                g.setColor(Color.BLUE);
+                int linkWidth = fmSpan.stringWidth(contentEm);
+                g.drawLine(x, y + 2, x + linkWidth, y + 2);
+            }
+        }
     }
 
 
