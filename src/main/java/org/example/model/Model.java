@@ -1,33 +1,42 @@
 package org.example.model;
 
+import org.example.model.css.CssParser;
+import org.example.model.css.cssom.CssRule;
+import org.example.model.html.HtmlElement;
+import org.example.model.html.HtmlParser;
+import org.example.model.socket.HttpResponse;
+import org.example.model.socket.Socket;
 import org.example.view.Viewer;
 
-public class Model {
-    Viewer viewer;
-    Socket socket;
-    String html;
-    Socket.HttpResponse httpResponse;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-    public Model(Viewer viewer, Socket socket) {
+public class Model {
+    private final Viewer viewer;
+    private final Socket socket;
+    private final HtmlParser htmlParser;
+    private final CssParser cssParser;
+    private HttpResponse httpResponse;
+
+    public Model(Viewer viewer) {
         this.viewer = viewer;
-        this.socket = socket;
+        this.socket = new Socket();
+        htmlParser = new HtmlParser();
+        cssParser = new CssParser();
     }
 
     public void getHtml(String siteUrl) {
         httpResponse = socket.fetchHtmlWithCss(siteUrl);
         viewer.update();
-//        updateView();
     }
 
     public String getHtml() {
-        html = """
+        return """
             <body>
             <div>
                 <h1>Welcome to Canvas Rendering</h1>
                 <h2>A Simple HTML Renderer</h2>
-                <p>
-                    This is a simple renderer using <em>Java Canvas</em>. It can display various HTML elements.
-                </p>
+                <p>This is a simple renderer using <em>Java Canvas</em>. It can display various HTML elements.</p>
                 <ul>
                     <li>
                             This is the first item in a list.
@@ -52,12 +61,33 @@ public class Model {
             </div>
             </body>
         """;
-        return html;
     }
-    public Socket.HttpResponse getHttpResponse() {
+
+    public HtmlElement parseHtml() {
+        if (httpResponse != null) {
+            HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()));
+            cssParser.parse(getHttpResponse().getCssResources());
+            for(CssRule css : cssParser.getCssTree().getRules()){
+                System.out.println(css);
+                cssParser.findCssOfHtml(dom, css.getSelector(), css);
+            }
+            return dom;
+        }
+        return htmlParser.parseHtml(extractBodyContent(getHtml()));
+    }
+
+    private String extractBodyContent(String html) {
+        Pattern bodyPattern = Pattern.compile("<body[^>]*>(.*?)</body>", Pattern.DOTALL);
+        Matcher matcher = bodyPattern.matcher(html);
+
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+        System.err.println("Body not found");
+        return null;
+    }
+
+    public HttpResponse getHttpResponse() {
         return httpResponse;
-    }
-    public void updateView() {
-        viewer.update();
     }
 }
