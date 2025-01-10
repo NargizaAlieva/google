@@ -19,7 +19,7 @@ public class HtmlParser {
             String text = matcher.group(2);
 
             if (tag != null) {
-                if (tag.startsWith("<!--") || tag.startsWith("<!DOCTYPE") || tag.startsWith("<img")) {
+                if (tag.startsWith("<!--") || tag.startsWith("<!DOCTYPE")) {
                     continue;
                 }
                 else if (tag.startsWith("<") && !tag.startsWith("</")) {
