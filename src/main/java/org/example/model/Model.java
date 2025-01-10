@@ -13,7 +13,7 @@ public class Model {
     }
 
     public void getHtml(String siteUrl) {
-        siteHtml = socket.connectWithSocket(siteUrl);
+        siteHtml = socket.fetchHtml(siteUrl);
         System.out.println(siteHtml);
 //        updateView();
     }
