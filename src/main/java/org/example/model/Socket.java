@@ -1,18 +1,24 @@
 package org.example.model;
 
+import org.example.view.Viewer;
+
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.*;
-import java.net.SocketTimeoutException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Socket {
     private static final int TIMEOUT_MS = 5000;
     private static final int MAX_REDIRECTS = 5;
 
-    public String fetchHtml(String urlString) {
+    public HttpResponse fetchHtmlWithCss(String urlString) {
         try {
             URL url = new URL(urlString);
             String host = url.getHost();
@@ -30,7 +36,7 @@ public class Socket {
                     sendHttpRequest(sslSocket, host, path);
 
                     // Read response
-                    HttpResponse response = readHttpResponse(sslSocket);
+                    HttpResponse response = readHttpResponse(sslSocket, url);
 
                     // Check response code
                     if (response.getStatusCode() == 301 || response.getStatusCode() == 302) {
@@ -46,20 +52,18 @@ public class Socket {
                         continue;
                     }
 
-                    // Return HTML for successful response
+                    // Return response if successful
                     if (response.getStatusCode() == 200) {
-                        return response.getBody();
+                        return response;
                     }
 
-                    // Handle non-successful responses
                     throw new IOException("HTTP error: " + response.getStatusCode() + " " + response.getStatusMessage());
                 }
             }
             throw new IOException("Too many redirects");
-        } catch (SocketTimeoutException e) {
-            return "Connection timed out: " + e.getMessage();
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -71,7 +75,7 @@ public class Socket {
         writer.println();
     }
 
-    private HttpResponse readHttpResponse(SSLSocket sslSocket) throws IOException {
+    private HttpResponse readHttpResponse(SSLSocket sslSocket, URL baseUrl) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(sslSocket.getInputStream()));
         String statusLine = reader.readLine();
         if (statusLine == null) {
@@ -80,9 +84,6 @@ public class Socket {
 
         // Parse status line
         String[] statusParts = statusLine.split(" ", 3);
-        if (statusParts.length < 3) {
-            throw new IOException("Invalid HTTP response: " + statusLine);
-        }
         int statusCode = Integer.parseInt(statusParts[1]);
         String statusMessage = statusParts[2];
 
@@ -104,20 +105,56 @@ public class Socket {
             body.append(line).append("\n");
         }
 
-        return new HttpResponse(statusCode, statusMessage, headers, body.toString().trim());
+        String htmlBody = body.toString().trim();
+        List<CssResource> cssResources = downloadCssFiles(htmlBody, baseUrl);
+
+        return new HttpResponse(statusCode, statusMessage, headers, htmlBody, cssResources);
     }
 
-    private static class HttpResponse {
+    private List<CssResource> downloadCssFiles(String html, URL baseUrl) {
+        List<CssResource> cssResources = new ArrayList<>();
+        try {
+            String[] lines = html.split("\n");
+            for (String line : lines) {
+                if (line.contains("<link") && line.contains("rel=\"stylesheet\"")) {
+                    int hrefStart = line.indexOf("href=\"") + 6;
+                    int hrefEnd = line.indexOf("\"", hrefStart);
+                    String cssPath = line.substring(hrefStart, hrefEnd);
+
+                    String cssUrl = cssPath.startsWith("http")
+                            ? cssPath
+                            : baseUrl.getProtocol() + "://" + baseUrl.getHost() + (cssPath.startsWith("/") ? cssPath : "/" + cssPath);
+
+                    String cssContent = fetchCss(cssUrl);
+                    if (cssContent != null) {
+                        cssResources.add(new CssResource(cssUrl, cssContent));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return cssResources;
+    }
+
+    private String fetchCss(String cssUrl) {
+        // Reuse the fetchHtml logic for CSS
+        return fetchHtmlWithCss(cssUrl).getHtmlBody();
+    }
+
+    public static class HttpResponse {
         private final int statusCode;
         private final String statusMessage;
         private final Map<String, String> headers;
-        private final String body;
+        private final String htmlBody;
+        private final List<CssResource> cssResources;
 
-        public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String body) {
+        public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String htmlBody, List<CssResource> cssResources) {
             this.statusCode = statusCode;
             this.statusMessage = statusMessage;
             this.headers = headers;
-            this.body = body;
+            this.htmlBody = htmlBody;
+            this.cssResources = cssResources;
         }
 
         public int getStatusCode() {
@@ -132,8 +169,30 @@ public class Socket {
             return headers;
         }
 
-        public String getBody() {
-            return body;
+        public String getHtmlBody() {
+            return htmlBody;
+        }
+
+        public List<CssResource> getCssResources() {
+            return cssResources;
+        }
+    }
+
+    public static class CssResource {
+        private final String url;
+        private final String content;
+
+        public CssResource(String url, String content) {
+            this.url = url;
+            this.content = content;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public String getContent() {
+            return content;
         }
     }
 }

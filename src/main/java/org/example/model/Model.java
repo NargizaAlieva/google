@@ -5,21 +5,22 @@ import org.example.view.Viewer;
 public class Model {
     Viewer viewer;
     Socket socket;
-    String siteHtml;
+    String html;
+    Socket.HttpResponse httpResponse;
 
-    public Model(Viewer viewer) {
+    public Model(Viewer viewer, Socket socket) {
         this.viewer = viewer;
-        this.socket = new Socket();
+        this.socket = socket;
     }
 
     public void getHtml(String siteUrl) {
-        siteHtml = socket.fetchHtml(siteUrl);
-        System.out.println(siteHtml);
+        httpResponse = socket.fetchHtmlWithCss(siteUrl);
+        viewer.update();
 //        updateView();
     }
 
     public String getHtml() {
-        siteHtml = """
+        html = """
             <body>
             <div>
                 <h1>Welcome to Canvas Rendering</h1>
@@ -51,9 +52,11 @@ public class Model {
             </div>
             </body>
         """;
-        return siteHtml;
+        return html;
     }
-
+    public Socket.HttpResponse getHttpResponse() {
+        return httpResponse;
+    }
     public void updateView() {
         viewer.update();
     }

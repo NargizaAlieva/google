@@ -1,6 +1,7 @@
 package org.example.view;
 
 import org.example.controller.Controller;
+import org.example.model.CssParser;
 import org.example.model.Model;
 
 import javax.swing.*;
@@ -14,7 +15,8 @@ public class Viewer extends JFrame {
     public Viewer() {
         controller = new Controller(this);
         Model model = controller.getModel();
-        canvas = new Canvas(model);
+        CssParser cssParser = controller.getCssParser();
+        canvas = new Canvas(model, cssParser);
 
         setTitle("Google Chrome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,5 +63,9 @@ public class Viewer extends JFrame {
 
     public String getSiteUrl() {
         return jTextField.getText();
+    }
+
+    public void setHtml(String html) {
+        canvas.setHtml(html);
     }
 }
