@@ -1,4 +1,4 @@
-package org.example.model.cssom;
+package org.example.model.css.cssom;
 
 public class CssProperty {
     String name;

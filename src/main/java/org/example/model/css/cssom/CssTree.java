@@ -1,6 +1,4 @@
-package org.example.model.cssom;
-
-
+package org.example.model.css.cssom;
 
 import java.util.List;
 import java.util.ArrayList;

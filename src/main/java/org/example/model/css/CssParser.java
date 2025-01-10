@@ -1,16 +1,22 @@
-package org.example.model;
+package org.example.model.css;
 
-import org.example.model.cssom.CssRule;
-import org.example.model.cssom.CssTree;
+import org.example.model.css.cssom.CssProperty;
+import org.example.model.css.cssom.CssRule;
+import org.example.model.css.cssom.CssTree;
+import org.example.model.html.HtmlElement;
+import org.example.model.socket.CssResource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CssParser {
     CssTree cssTree = new CssTree();
 
-    public void parse(List<Socket.CssResource> cssResources) {
-        for (Socket.CssResource cssResource : cssResources) {
+    public CssParser() {}
+
+    public void parse(List<CssResource> cssResources) {
+        for (CssResource cssResource : cssResources) {
             String[] blocks = cssResource.getContent().split("}");
 
             for (String block : blocks) {
@@ -54,6 +60,39 @@ public class CssParser {
         }
     }
 
+    public void findCssOfHtml(HtmlElement htmlElement, List<String> selectors, CssRule cssRule) {
+        if (selectors.isEmpty()) {
+            for (CssProperty cssProperty : cssRule.getProperties()) {
+                htmlElement.setCssRule(cssProperty.getName(), cssProperty.getValue());
+            }
+            return;
+        }
+
+        if (htmlElement.getClasses() == null) {
+            return;
+        }
+
+        String currentSelector = selectors.get(0);
+
+        if (Arrays.asList(htmlElement.getClasses()).contains(currentSelector) || htmlElement.getTag().equals(currentSelector)) {
+            selectors = selectors.subList(1, selectors.size());
+
+            if (selectors.isEmpty()) {
+                for (CssProperty cssProperty : cssRule.getProperties()) {
+                    htmlElement.setCssRule(cssProperty.getName(), cssProperty.getValue());
+                }
+                return;
+            }
+
+            for (HtmlElement child : htmlElement.getChildren()) {
+                findCssOfHtml(child, selectors, cssRule);
+            }
+        }
+
+        for (HtmlElement child : htmlElement.getChildren()) {
+            findCssOfHtml(child, selectors, cssRule);
+        }
+    }
 
     public CssTree getCssTree() {
         return cssTree;
