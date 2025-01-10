@@ -1,4 +1,4 @@
-package org.example.view.htmlRenderer;
+package org.example.model.html;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +11,6 @@ public class HtmlElement {
     private String[] ids;
     private HashMap<String, String> styles;
     private List<HtmlElement> children;
-    private HtmlElement parent;
     private HashMap<String, String> css;
 
     public HtmlElement(String tag, String content) {
@@ -20,7 +19,6 @@ public class HtmlElement {
         this.children = new ArrayList<>();
         this.ids = new String[0];
         this.classes = new String[0];
-        this.parent = null;
         this.styles = new HashMap<>();
         this.css = new HashMap<>();
     }
@@ -40,10 +38,6 @@ public class HtmlElement {
     public HashMap<String, String> getStyles() {
         return styles;
     }
-
-    public HtmlElement getParent() {return parent;}
-
-    public void setParent(HtmlElement parent) {this.parent = parent;}
 
     public void addChild(HtmlElement child) {
         children.add(child);

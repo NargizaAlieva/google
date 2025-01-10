@@ -4,8 +4,8 @@ import org.example.model.Model;
 import org.example.view.Viewer;
 
 public class SearchCommand implements Command {
-    private Viewer viewer;
-    private Model model;
+    private final Viewer viewer;
+    private final Model model;
     public SearchCommand(Viewer viewer, Model model) {
         this.viewer = viewer;
         this.model = model;

@@ -2,9 +2,7 @@ package org.example.controller;
 
 import org.example.controller.commands.Command;
 import org.example.controller.commands.SearchCommand;
-import org.example.model.CssParser;
 import org.example.model.Model;
-import org.example.model.Socket;
 import org.example.view.Viewer;
 
 import java.awt.event.ActionEvent;
@@ -12,26 +10,18 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 
 public class Controller implements ActionListener {
-    private Model model;
-    private Viewer viewer;
+    private final Model model;
+    private final Viewer viewer;
     private HashMap<String, Command> commandMap;
-    private Socket socket;
-    private CssParser cssParser;
 
     public Controller(Viewer viewer) {
         this.viewer = viewer;
-        cssParser = new CssParser();
-        socket = new Socket();
-        model = new Model(viewer, socket);
+        model = new Model(viewer);
         setupCommands();
     }
 
     public Model getModel() {
         return model;
-    }
-
-    public CssParser getCssParser() {
-        return cssParser;
     }
 
     @Override

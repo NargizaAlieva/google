@@ -1,30 +1,37 @@
 package org.example.view;
 
 import org.example.controller.Controller;
-import org.example.model.CssParser;
 import org.example.model.Model;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JScrollPane;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.Color;
 
 public class Viewer extends JFrame {
-    private Canvas canvas;
-    private Controller controller;
+    private final Canvas canvas;
+    private final Controller controller;
     private JTextField jTextField;
 
     public Viewer() {
         controller = new Controller(this);
         Model model = controller.getModel();
-        CssParser cssParser = controller.getCssParser();
-        canvas = new Canvas(model, cssParser);
+        canvas = new Canvas(model);
 
         setTitle("Google Chrome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
 
-        createTextField();
-        add(canvas, BorderLayout.CENTER);
+        createSearchField();
+        JScrollPane scrollPane = new JScrollPane(canvas);
+        add(scrollPane, BorderLayout.CENTER);
         setVisible(true);
     }
 
@@ -32,7 +39,7 @@ public class Viewer extends JFrame {
         canvas.repaint();
     }
 
-    private void createTextField() {
+    private void createSearchField() {
         jTextField = new JTextField();
 
         jTextField.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -63,9 +70,5 @@ public class Viewer extends JFrame {
 
     public String getSiteUrl() {
         return jTextField.getText();
-    }
-
-    public void setHtml(String html) {
-        canvas.setHtml(html);
     }
 }
