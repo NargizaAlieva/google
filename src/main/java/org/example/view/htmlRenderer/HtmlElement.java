@@ -1,7 +1,5 @@
 package org.example.view.htmlRenderer;
 
-import org.example.model.CssRule;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +25,8 @@ public class HtmlElement {
         this.css = new HashMap<>();
     }
 
-    public void setCssRule(HashMap<String, String> cssRule) {
-        this.css.putAll(cssRule);
+    public void setCssRule(String key, String value) {
+        this.css.put(key, value);
     }
 
     public HashMap<String, String> getCssRule() {

@@ -1,10 +1,13 @@
 package org.example.model;
 
+import org.example.model.dom_cssom.CssRule;
+import org.example.model.dom_cssom.CssTree;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class CssParser {
-    List<CssRule> rules = new ArrayList<>();
+    CssTree cssTree = new CssTree();
 
     public void parse(List<Socket.CssResource> cssResources) {
         for (Socket.CssResource cssResource : cssResources) {
@@ -46,14 +49,13 @@ public class CssParser {
                         rule.addProperty(keyValue[0].trim(), keyValue[1].trim());
                     }
                 }
-
-                rules.add(rule);
+                cssTree.addRule(rule);
             }
         }
     }
 
 
-    public List<CssRule> getRules() {
-        return rules;
+    public CssTree getCssTree() {
+        return cssTree;
     }
 }

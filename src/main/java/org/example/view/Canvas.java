@@ -1,7 +1,8 @@
 package org.example.view;
 
 import org.example.model.CssParser;
-import org.example.model.CssRule;
+import org.example.model.dom_cssom.CssProperty;
+import org.example.model.dom_cssom.CssRule;
 import org.example.model.Model;
 import org.example.view.htmlRenderer.HtmlElement;
 
@@ -63,7 +64,7 @@ public class Canvas extends JPanel {
 
         root = parseHtml(extractBodyContent(model.getHttpResponse().getHtmlBody()));
         cssParser.parse(model.getHttpResponse().getCssResources());
-        for(CssRule css : cssParser.getRules()){
+        for(CssRule css : cssParser.getCssTree().getRules()){
             System.out.println(css);
             findCssOfHtml(root, css.getSelector(), css);
         }
@@ -74,7 +75,9 @@ public class Canvas extends JPanel {
 
     private void findCssOfHtml(HtmlElement htmlElement, List<String> selectors, CssRule cssRule) {
         if (selectors.isEmpty()) {
-            htmlElement.setCssRule(cssRule.getProperty());
+            for (CssProperty cssProperty : cssRule.getProperties()) {
+                htmlElement.setCssRule(cssProperty.getName(), cssProperty.getValue());
+            }
             return;
         }
 
@@ -88,7 +91,9 @@ public class Canvas extends JPanel {
             selectors = selectors.subList(1, selectors.size());
 
             if (selectors.isEmpty()) {
-                htmlElement.setCssRule(cssRule.getProperty());
+                for (CssProperty cssProperty : cssRule.getProperties()) {
+                    htmlElement.setCssRule(cssProperty.getName(), cssProperty.getValue());
+                }
                 return;
             }
 
