@@ -1,8 +1,8 @@
 package org.example.view;
 
 import org.example.model.CssParser;
-import org.example.model.dom_cssom.CssProperty;
-import org.example.model.dom_cssom.CssRule;
+import org.example.model.cssom.CssProperty;
+import org.example.model.cssom.CssRule;
 import org.example.model.Model;
 import org.example.view.htmlRenderer.HtmlElement;
 

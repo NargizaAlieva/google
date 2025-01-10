@@ -1,7 +1,7 @@
 package org.example.model;
 
-import org.example.model.dom_cssom.CssRule;
-import org.example.model.dom_cssom.CssTree;
+import org.example.model.cssom.CssRule;
+import org.example.model.cssom.CssTree;
 
 import java.util.ArrayList;
 import java.util.List;
