@@ -1,6 +1,7 @@
 package org.example.model.css.cssom;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class CssRule {
@@ -24,7 +25,16 @@ public class CssRule {
         return properties;
     }
 
+    public HashMap<String, String> getPropertiesMap() {
+        HashMap<String, String> map = new HashMap<>();
+        for (CssProperty property : properties) {
+            map.put(property.getName(), property.getValue());
+        }
+        return map;
+    }
+
     public String getFullSelector() {
         return String.join(" ", selectors); // Собрать обратно в строку
     }
+
 }

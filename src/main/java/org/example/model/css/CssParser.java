@@ -15,7 +15,7 @@ public class CssParser {
 
     public CssParser() {}
 
-    public void parse(List<CssResource> cssResources) {
+    public CssTree parse(List<CssResource> cssResources) {
         for (CssResource cssResource : cssResources) {
             String[] blocks = cssResource.getContent().split("}");
 
@@ -58,6 +58,7 @@ public class CssParser {
                 cssTree.addRule(rule);
             }
         }
+        return cssTree;
     }
 
     public void findCssOfHtml(HtmlElement htmlElement, List<String> selectors, CssRule cssRule) {

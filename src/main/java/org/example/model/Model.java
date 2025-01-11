@@ -2,8 +2,12 @@ package org.example.model;
 
 import org.example.model.css.CssParser;
 import org.example.model.css.cssom.CssRule;
+import org.example.model.css.cssom.CssTree;
 import org.example.model.html.HtmlElement;
 import org.example.model.html.HtmlParser;
+import org.example.model.renderTree.Merge_CSSOM_DOM;
+import org.example.model.renderTree.RenderNode;
+import org.example.model.renderTree.RenderTree;
 import org.example.model.socket.HttpResponse;
 import org.example.model.socket.Socket;
 import org.example.view.Viewer;
@@ -17,12 +21,14 @@ public class Model {
     private final HtmlParser htmlParser;
     private final CssParser cssParser;
     private HttpResponse httpResponse;
+    private Merge_CSSOM_DOM mergeCssomDom;
 
     public Model(Viewer viewer) {
         this.viewer = viewer;
         this.socket = new Socket();
         htmlParser = new HtmlParser();
         cssParser = new CssParser();
+        mergeCssomDom = new Merge_CSSOM_DOM();
     }
 
     public void getHtml(String siteUrl) {
@@ -66,10 +72,10 @@ public class Model {
     public HtmlElement parseHtml() {
         if (httpResponse != null) {
             HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()));
-            cssParser.parse(getHttpResponse().getCssResources());
-            for(CssRule css : cssParser.getCssTree().getRules()){
-                System.out.println(css);
-                cssParser.findCssOfHtml(dom, css.getSelector(), css);
+            CssTree cssTree = cssParser.parse(getHttpResponse().getCssResources());
+            RenderTree renderTree = mergeCssomDom.mergeCSSOM_DOM(dom, cssTree);
+            for (RenderNode renderTree1 : renderTree.getRoot().getChildren()){
+                System.out.println(renderTree1.getAppliedStyles());
             }
             return dom;
         }
