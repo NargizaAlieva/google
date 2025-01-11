@@ -10,8 +10,8 @@ import org.example.view.renderers.LinkArea;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.Desktop;
 import java.net.URI;
 import java.util.HashMap;
@@ -30,13 +30,7 @@ public class Controller implements ActionListener {
 
     public void attachCanvasMouseEvents(Canvas canvas) {
         this.htmlRenderer = canvas.getHtmlRenderer();
-
-        canvas.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                handleMouseClick(e);
-            }
-        });
+        canvas.addMouseListener(new CanvasMouseListener(this));
     }
 
     @Override
@@ -47,12 +41,11 @@ public class Controller implements ActionListener {
 
     private void setupCommands() {
         SearchCommand searchCommand = new SearchCommand(viewer, model);
-
         commandMap = new HashMap<>();
         commandMap.put("Search", searchCommand);
     }
 
-    private void handleMouseClick(MouseEvent e) {
+    void handleMouseClick(MouseEvent e) {
         if (htmlRenderer == null) {
             return;
         }
@@ -79,8 +72,20 @@ public class Controller implements ActionListener {
         }
     }
 
+    private static class CanvasMouseListener extends MouseAdapter {
+        private final Controller controller;
+
+        public CanvasMouseListener(Controller controller) {
+            this.controller = controller;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            controller.handleMouseClick(e);
+        }
+    }
+
     public Model getModel() {
         return model;
     }
-
 }
