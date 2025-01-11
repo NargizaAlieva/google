@@ -6,19 +6,24 @@ import org.example.utils.Cursor;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public class HtmlRenderer {
     private final Cursor cursor;
     private Graphics2D g2d;
+    private List<LinkArea> linkAreas;
     private Map<String, Consumer<HtmlElement>> renderers;
 
     public HtmlRenderer(Cursor cursor) {
         this.cursor = cursor;
+        this.linkAreas = new ArrayList<>();
         createRenderers();
     }
+
     public void renderElement(Graphics2D g2d, HtmlElement dom) {
         this.g2d = g2d;
         renderElement(dom, dom.getTag());
@@ -99,23 +104,23 @@ public class HtmlRenderer {
 
 
     private void renderLink(HtmlElement element) {
-        System.out.println(element.getChildren().size());
-        HtmlElement child = element;
-        if (element.getChildren().size() == 1) {
-            child = child.getChildren().get(0);
-            while (child.getContent() == null)
-                child = child.getChildren().get(0);
-        }
-
-        g2d.setFont(new Font("Serif", Font.PLAIN, 16));
         g2d.setColor(Color.BLUE);
-        g2d.drawString(child.getContent(), cursor.getX(), cursor.getY());
+        Font underlineFont = g2d.getFont().deriveFont(Font.PLAIN);
+        g2d.setFont(underlineFont);
 
         FontMetrics fm = g2d.getFontMetrics();
-        int linkWidth = fm.stringWidth(child.getContent());
-        g2d.drawLine(cursor.getX(), cursor.getY() + 2, cursor.getX() + linkWidth, cursor.getY() + 2);
+        String content = element.getContent();
+        int x = cursor.getX();
+        int y = cursor.getY();
 
-        cursor.updatePosition(linkWidth, 0);
+        g2d.drawString(content, x, y);
+        g2d.drawLine(x, y + 2, x + fm.stringWidth(content), y + 2);
+
+        // Кликабельная область (ну то что было добавлено)
+        Rectangle clickableArea = new Rectangle(x, y - fm.getAscent(), fm.stringWidth(content), fm.getHeight());
+        linkAreas.add(new LinkArea(clickableArea, element.getContent()));
+
+        cursor.updatePosition(fm.stringWidth(content), 0);
     }
 
     private void renderList(HtmlElement element, String prefix) {
@@ -150,4 +155,12 @@ public class HtmlRenderer {
     private void renderDefault(HtmlElement element) {
 //        renderText(element, "Serif", Font.PLAIN, 16, Color.BLACK, 20);
     }
+
+    public List<LinkArea> getLinkAreas() {
+        return linkAreas;
+    }
+
+
+
 }
+

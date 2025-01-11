@@ -1,3 +1,4 @@
+// Убрана обработка событий мыши из Canvas
 package org.example.view;
 
 import org.example.utils.Cursor;
@@ -41,5 +42,9 @@ public class Canvas extends JPanel {
         HtmlElement dom = model.parseHtml();
         htmlRenderer.renderElement(g2d, dom);
         revalidate();
+    }
+
+    public HtmlRenderer getHtmlRenderer() {
+        return htmlRenderer;
     }
 }

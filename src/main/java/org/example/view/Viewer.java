@@ -24,6 +24,8 @@ public class Viewer extends JFrame {
         Model model = controller.getModel();
         canvas = new Canvas(model);
 
+        controller.attachCanvasMouseEvents(canvas);
+
         setTitle("Google Chrome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
