@@ -10,6 +10,7 @@ public class RenderNode {
     private String textContent;
     private HashMap<String, String> appliedStyles; // Все применённые стили.
     private int x, y, width, height;
+    private RenderNode parent;
 
     public RenderNode(String tagName) {
         this.tagName = tagName;
@@ -29,6 +30,14 @@ public class RenderNode {
         if (parentStyles != null) {
             appliedStyles.putAll(parentStyles);
         }
+    }
+
+    public void setParent(RenderNode parent) {
+        this.parent = parent;
+    }
+
+    public RenderNode getParent() {
+        return parent;
     }
 
     public HashMap<String, String> getAppliedStyles() {

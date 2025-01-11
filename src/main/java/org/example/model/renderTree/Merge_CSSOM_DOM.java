@@ -4,7 +4,6 @@ import org.example.model.css.cssom.CssRule;
 import org.example.model.css.cssom.CssTree;
 import org.example.model.html.HtmlElement;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +15,7 @@ public class Merge_CSSOM_DOM {
         RenderNode rootRenderNode = new RenderNode(htmlElement.getTag());
         createRenderTree(htmlElement, rootRenderNode);
         for (CssRule cssRule : cssTree.getRules()) {
-            matchCssAndHtml(htmlElement, rootRenderNode, cssRule.getSelector(), cssRule);
+            findCssOfRenderTree(htmlElement, rootRenderNode, cssRule.getSelector(), cssRule);
         }
 
         return new RenderTree(rootRenderNode);
@@ -26,71 +25,93 @@ public class Merge_CSSOM_DOM {
         for (HtmlElement child : htmlElement.getChildren()) {
             RenderNode renderNode = new RenderNode(child.getTag());
             parentRenderNode.addChild(renderNode);
+            renderNode.setParent(parentRenderNode);
             createRenderTree(child, renderNode);
         }
     }
 
-    private HashMap<String, String> computeStyles(CssRule cssRule, HtmlElement htmlElement, RenderNode parentRenderNode) {
-        HashMap<String, String> styles = new HashMap<>();
-        styles.putAll(parentRenderNode.getAppliedStyles());
-        styles.putAll(htmlElement.getStyles());
-        if (cssRule != null) {
-            styles.putAll(cssRule.getPropertiesMap());
-        }
-
-        Set<String> allowedStyles = Set.of(
-                "width", "height", "margin", "padding", "border-width", "color",
-                "background-color", "font-size", "font-family", "text-align",
-                "line-height", "display", "visibility", "z-index", "position"
-        );
-
-        styles.keySet().retainAll(allowedStyles);
-        return styles;
-    }
-    private void matchCssAndHtml(HtmlElement htmlElement, RenderNode renderNode, List<String> selectors, CssRule cssRule) {
-        if (selectors.isEmpty()) {
-            if (cssRule != null) {
-                renderNode.applyStyles(cssRule.getPropertiesMap());
-            }
+    public void findCssOfRenderTree(HtmlElement htmlElement, RenderNode renderNode, List<String> selectors, CssRule cssRule) {
+        if (htmlElement.getClasses() == null) {
             return;
         }
 
-        String selector = selectors.get(0);
+        String currentSelector = selectors.get(0);
+        List<HtmlElement> htmlChildren = htmlElement.getChildren();
+        List<RenderNode> renderChildren = renderNode.getChildren();
 
-        boolean matches = (htmlElement.getClasses() != null && Arrays.asList(htmlElement.getClasses()).contains(selector))
-                || htmlElement.getTag().equals(selector);
+        if (Arrays.asList(htmlElement.getClasses()).contains(currentSelector) || htmlElement.getTag().equals(currentSelector)) {
+            selectors = selectors.subList(1, selectors.size());
 
-        if (matches) {
-            List<String> remainingSelectors = selectors.subList(1, selectors.size());
-
-            // Если остались дочерние элементы, обходим их вместе с RenderTree
-            List<HtmlElement> htmlChildren = htmlElement.getChildren();
-            List<RenderNode> renderChildren = renderNode.getChildren();
-
-            for (int i = 0; i < htmlChildren.size(); i++) {
-                HtmlElement childHtml = htmlChildren.get(i);
-                RenderNode childRender = renderChildren.get(i);
-                // Рекурсивно проверяем дочерние элементы
-                matchCssAndHtml(childHtml, childRender, new ArrayList<>(remainingSelectors), cssRule);
+            if (selectors.isEmpty()) {
+                computeStyles(cssRule, htmlElement, renderNode);
+                return;
             }
-
-            // Если правило совпало на текущем уровне, применяем его стили к текущему RenderNode
-            if (cssRule != null) {
-                renderNode.applyStyles(cssRule.getPropertiesMap());
-            }
-        } else {
-            // Если текущий элемент не соответствует селектору, рекурсивно проверяем дочерние элементы
-            List<HtmlElement> htmlChildren = htmlElement.getChildren();
-            List<RenderNode> renderChildren = renderNode.getChildren();
-
             for (int i = 0; i < htmlChildren.size(); i++) {
-                HtmlElement childHtml = htmlChildren.get(i);
-                RenderNode childRender = renderChildren.get(i);
-                // Рекурсивно проверяем дочерние элементы
-                matchCssAndHtml(childHtml, childRender, new ArrayList<>(selectors), cssRule);
+                findCssOfRenderTree(htmlChildren.get(i), renderChildren.get(i), selectors, cssRule);
             }
         }
+        for (int i = 0; i < htmlChildren.size(); i++) {
+            findCssOfRenderTree(htmlChildren.get(i), renderChildren.get(i), selectors, cssRule);
+        }
     }
+    private void computeStyles(CssRule cssRule, HtmlElement htmlElement, RenderNode renderNode) {
+        HashMap<String, String> styles = new HashMap<>();
+        styles.putAll(renderNode.getParent().getAppliedStyles());
+        styles.putAll(cssRule.getPropertiesMap());
+        styles.putAll(htmlElement.getStyles());
 
+        Set<String> allowedStyles = Set.of(
+                // Размеры и отступы
+                "width", "height", "min-width", "max-width", "min-height", "max-height",
+                "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
+                "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
+                "border", "border-width", "border-color", "border-style",
+                "border-top", "border-right", "border-bottom", "border-left",
+                "border-radius",
+                "outline", "outline-width", "outline-color", "outline-style",
+
+                // Цвета и фон
+                "color", "background", "background-color", "background-image",
+                "background-size", "background-position", "background-repeat",
+
+                // Шрифты и текст
+                "font-size", "font-family", "font-weight", "font-style", "font-variant",
+                "line-height", "letter-spacing", "word-spacing",
+                "text-align", "text-indent", "text-decoration", "text-transform",
+                "white-space", "vertical-align",
+
+                // Расположение и отображение
+                "display", "visibility", "z-index", "position",
+                "top", "right", "bottom", "left", "overflow",
+                "overflow-x", "overflow-y", "float", "clear",
+
+                // Тени и градиенты
+                "box-shadow", "text-shadow",
+
+                // Переходы и анимации
+                "transition", "transition-property", "transition-duration",
+                "transition-timing-function", "transition-delay",
+                "animation", "animation-name", "animation-duration",
+                "animation-timing-function", "animation-delay",
+                "animation-iteration-count", "animation-direction",
+
+                // Flexbox
+                "flex", "flex-grow", "flex-shrink", "flex-basis",
+                "justify-content", "align-items", "align-self",
+                "align-content", "order",
+
+                // Grid
+                "grid-template-rows", "grid-template-columns", "grid-template-areas",
+                "grid-gap", "grid-row", "grid-column", "grid-area",
+                "justify-items", "justify-self", "place-items",
+
+                // Другие свойства
+                "cursor", "clip", "opacity", "content", "quotes"
+        );
+
+
+        styles.keySet().retainAll(allowedStyles);
+        renderNode.applyStyles(styles);
+    }
 
 }

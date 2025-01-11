@@ -36,5 +36,15 @@ public class CssRule {
     public String getFullSelector() {
         return String.join(" ", selectors); // Собрать обратно в строку
     }
+    public String toCssString() {
+        StringBuilder css = new StringBuilder();
+        css.append(getFullSelector()).append(" {").append(System.lineSeparator());
+        for (CssProperty property : properties) {
+            css.append("    ").append(property.getName()).append(": ").append(property.getValue()).append(";")
+                    .append(System.lineSeparator());
+        }
+        css.append("}");
+        return css.toString();
+    }
 
 }
