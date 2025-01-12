@@ -1,4 +1,3 @@
-// Убрана обработка событий мыши из Canvas
 package org.example.view;
 
 import org.example.utils.Cursor;

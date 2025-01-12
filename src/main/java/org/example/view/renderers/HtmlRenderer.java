@@ -1,16 +1,21 @@
 package org.example.view.renderers;
 
-import org.example.model.html.HtmlElement;
-import org.example.utils.Cursor;
-
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Rectangle;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import org.example.model.html.HtmlElement;
+import org.example.utils.Cursor;
 
 public class HtmlRenderer {
     private final Cursor cursor;
