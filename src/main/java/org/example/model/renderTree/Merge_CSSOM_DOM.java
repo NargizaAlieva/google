@@ -38,16 +38,26 @@ public class Merge_CSSOM_DOM {
     }
 
     public void findCssOfRenderTree(HtmlElement htmlElement, RenderNode renderNode, List<String> selectors, CssRule cssRule) {
-        if (htmlElement.getClasses() == null || selectors.isEmpty()) {
+        if (htmlElement.getClasses() == null || selectors.isEmpty() || cssRule == null) {
             return;
         }
 
         Set<String> elementClasses = new HashSet<>(Arrays.asList(htmlElement.getClasses()));
+
         String currentSelector = selectors.get(0);
+        if (htmlElement.getIds() != null){
+            Set<String> elementIds = new HashSet<>(Arrays.asList(htmlElement.getIds()));
+            if (currentSelector.startsWith("#") && elementIds.contains(currentSelector.substring(1))) {
+                selectors = selectors.subList(1, selectors.size());
+                if (selectors.isEmpty()) {
+                    computeStyles(cssRule, renderNode);
+                    return;
+                }
+            }
+        }
 
         if (elementClasses.contains(currentSelector) || htmlElement.getTag().equals(currentSelector)) {
             selectors = selectors.subList(1, selectors.size());
-
             if (selectors.isEmpty()) {
                 computeStyles(cssRule, renderNode);
                 return;
@@ -58,6 +68,7 @@ public class Merge_CSSOM_DOM {
             findCssOfRenderTree(htmlElement.getChildren().get(i), renderNode.getChildren().get(i), selectors, cssRule);
         }
     }
+
 
     private void apllyCssToChilds(RenderNode renderNode) {
         for (RenderNode child : renderNode.getChildren()) {

@@ -43,8 +43,6 @@ public class HtmlElement {
         children.add(child);
     }
 
-
-
     public String getTag() {
         return tag;
     }
