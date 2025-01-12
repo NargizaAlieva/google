@@ -75,12 +75,9 @@ public class Model {
             CssTree cssTree = cssParser.parse(getHttpResponse().getCssResources());
             RenderTree renderTree = mergeCssomDom.mergeCSSOM_DOM(dom, cssTree);
             for(CssRule css : cssTree.getRules()){
-                System.out.println(css.getFullSelector());
-                System.out.println(css.toCssString());
                 cssParser.findCssOfHtml(dom, css.getSelector(), css);
             }
             for (RenderNode renderTree1 : renderTree.getRoot().getChildren()){
-                System.out.println(renderTree1.getAppliedStyles());
             }
             return dom;
         }

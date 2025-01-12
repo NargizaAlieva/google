@@ -6,7 +6,9 @@ import org.example.model.html.HtmlElement;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class Merge_CSSOM_DOM {
@@ -14,9 +16,12 @@ public class Merge_CSSOM_DOM {
     public RenderTree mergeCSSOM_DOM(HtmlElement htmlElement, CssTree cssTree) {
         RenderNode rootRenderNode = new RenderNode(htmlElement.getTag());
         createRenderTree(htmlElement, rootRenderNode);
+
         for (CssRule cssRule : cssTree.getRules()) {
             findCssOfRenderTree(htmlElement, rootRenderNode, cssRule.getSelector(), cssRule);
         }
+
+        apllyCssToChilds(rootRenderNode);
 
         return new RenderTree(rootRenderNode);
     }
@@ -26,40 +31,47 @@ public class Merge_CSSOM_DOM {
             RenderNode renderNode = new RenderNode(child.getTag());
             parentRenderNode.addChild(renderNode);
             renderNode.setTextContent(child.getContent());
+            renderNode.setStyles(child.getStyles());
             renderNode.setParent(parentRenderNode);
             createRenderTree(child, renderNode);
         }
     }
 
     public void findCssOfRenderTree(HtmlElement htmlElement, RenderNode renderNode, List<String> selectors, CssRule cssRule) {
-        if (htmlElement.getClasses() == null) {
+        if (htmlElement.getClasses() == null || selectors.isEmpty()) {
             return;
         }
 
+        Set<String> elementClasses = new HashSet<>(Arrays.asList(htmlElement.getClasses()));
         String currentSelector = selectors.get(0);
-        List<HtmlElement> htmlChildren = htmlElement.getChildren();
-        List<RenderNode> renderChildren = renderNode.getChildren();
 
-        if (Arrays.asList(htmlElement.getClasses()).contains(currentSelector) || htmlElement.getTag().equals(currentSelector)) {
+        if (elementClasses.contains(currentSelector) || htmlElement.getTag().equals(currentSelector)) {
             selectors = selectors.subList(1, selectors.size());
 
             if (selectors.isEmpty()) {
-                computeStyles(cssRule, htmlElement, renderNode);
+                computeStyles(cssRule, renderNode);
                 return;
             }
-            for (int i = 0; i < htmlChildren.size(); i++) {
-                findCssOfRenderTree(htmlChildren.get(i), renderChildren.get(i), selectors, cssRule);
-            }
         }
-        for (int i = 0; i < htmlChildren.size(); i++) {
-            findCssOfRenderTree(htmlChildren.get(i), renderChildren.get(i), selectors, cssRule);
+
+        for (int i = 0; i < htmlElement.getChildren().size(); i++) {
+            findCssOfRenderTree(htmlElement.getChildren().get(i), renderNode.getChildren().get(i), selectors, cssRule);
         }
     }
-    private void computeStyles(CssRule cssRule, HtmlElement htmlElement, RenderNode renderNode) {
-        HashMap<String, String> styles = new HashMap<>();
-        styles.putAll(renderNode.getParent().getAppliedStyles());
-        styles.putAll(cssRule.getPropertiesMap());
-        styles.putAll(htmlElement.getStyles());
+
+    private void apllyCssToChilds(RenderNode renderNode) {
+        for (RenderNode child : renderNode.getChildren()) {
+            HashMap<String, String> parentStyles = renderNode.getAppliedStyles();
+            for (Map.Entry<String, String> entry : parentStyles.entrySet()) {
+                child.getAppliedStyles().putIfAbsent(entry.getKey(), entry.getValue());
+            }
+
+            apllyCssToChilds(child);
+        }
+    }
+
+    private void computeStyles(CssRule cssRule, RenderNode renderNode) {
+        HashMap<String, String> styles = new HashMap<>(cssRule.getPropertiesMap());
 
         Set<String> allowedStyles = Set.of(
                 // Размеры и отступы
@@ -110,9 +122,9 @@ public class Merge_CSSOM_DOM {
                 "cursor", "clip", "opacity", "content", "quotes"
         );
 
-
         styles.keySet().retainAll(allowedStyles);
-        renderNode.applyStyles(styles);
-    }
 
+        renderNode.setStyles(styles);
+    }
 }
+

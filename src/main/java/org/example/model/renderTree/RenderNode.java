@@ -26,7 +26,7 @@ public class RenderNode {
         this.textContent = textContent;
     }
 
-    public void applyStyles(HashMap<String, String> parentStyles) {
+    public void setStyles(HashMap<String, String> parentStyles) {
         if (parentStyles != null) {
             appliedStyles.putAll(parentStyles);
         }
