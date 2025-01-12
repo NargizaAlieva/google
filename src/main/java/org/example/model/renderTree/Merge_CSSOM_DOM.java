@@ -25,6 +25,7 @@ public class Merge_CSSOM_DOM {
         for (HtmlElement child : htmlElement.getChildren()) {
             RenderNode renderNode = new RenderNode(child.getTag());
             parentRenderNode.addChild(renderNode);
+            renderNode.setTextContent(child.getContent());
             renderNode.setParent(parentRenderNode);
             createRenderTree(child, renderNode);
         }
