@@ -108,98 +108,44 @@ public class HtmlRenderer {
         }
     }
 
-
-//    private void renderLink(HtmlElement element) {
-//        String content = element.getContent();
-//        if (element.getChildren().size() == 1) {
-//            element = element.getChildren().get(0);
-//            while (!element.getTag().equals("text") && element.getChildren().size() == 1)
-//                element = element.getChildren().get(0);
-//        }
-//        g2d.setColor(Color.BLUE);
-//        Font underlineFont = g2d.getFont().deriveFont(Font.PLAIN);
-//        g2d.setFont(underlineFont);
-//
-//        FontMetrics fm = g2d.getFontMetrics();
-//        int x = cursor.getX();
-//        int y = cursor.getY();
-//
-//        g2d.drawString(element.getContent(), x, y);
-//        g2d.drawLine(x, y + 2, x + fm.stringWidth(element.getContent()), y + 2);
-//
-//        // Кликабельная область (ну то что было добавлено)
-//        Rectangle clickableArea = new Rectangle(x, y - fm.getAscent(), fm.stringWidth(element.getContent()), fm.getHeight());
-//        linkAreas.add(new LinkArea(clickableArea, content));
-//
-//        cursor.updatePosition(fm.stringWidth(content), 0);
-//    }
-
     private void renderLink(HtmlElement element) {
-        // Извлекаем контент ссылки (например, href или src)
-        String linkContent = element.getContent();
+        String link = element.getContent();
 
-        // Если ссылка содержит дочерние элементы, находим первый текстовый или изображенный элемент
-        element = findRenderableChild(element);
-
-        // Если элемент — текст, рендерим его
-        if (element.getTag().equals("text")) {
-            renderTextLink(g2d, element.getContent(), linkContent);
-        }
-        // Если элемент — изображение, рендерим его
-        else if (element.getTag().equals("img")) {
-            renderImageLink(g2d, element, linkContent);
-        }
-    }
-
-    // Метод для поиска рендеримого дочернего элемента
-    private HtmlElement findRenderableChild(HtmlElement element) {
         while (!element.getTag().equals("text") && !element.getTag().equals("img") && element.getChildren().size() == 1) {
             element = element.getChildren().get(0);
         }
-        return element;
+
+        if (element.getTag().equals("text")) {
+            renderTextLink(element.getContent(), link);
+        }
+        else if (element.getTag().equals("img")) {
+            renderImageLink(element, link);
+        }
     }
 
-    // Рендеринг текстовой ссылки
-    private void renderTextLink(Graphics2D g2d, String text, String linkContent) {
-        // Установка стиля текста
+    private void renderTextLink(String text, String linkContent) {
         g2d.setColor(Color.BLUE);
         Font underlineFont = g2d.getFont().deriveFont(Font.PLAIN);
         g2d.setFont(underlineFont);
 
-        // Вычисляем метрики текста
         FontMetrics fm = g2d.getFontMetrics();
-        int x = cursor.getX();
-        int y = cursor.getY();
 
-        // Рисуем текст и подчеркивание
-        g2d.drawString(text, x, y);
-        g2d.drawLine(x, y + 2, x + fm.stringWidth(text), y + 2);
+        g2d.drawString(text, cursor.getX(), cursor.getY());
+        g2d.drawLine(cursor.getX(), cursor.getY() + 2, cursor.getX() + fm.stringWidth(text), cursor.getY() + 2);
 
-        // Создаем кликабельную область
-        Rectangle clickableArea = new Rectangle(x, y - fm.getAscent(), fm.stringWidth(text), fm.getHeight());
+        Rectangle clickableArea = new Rectangle(cursor.getX(), cursor.getY() - fm.getAscent(), fm.stringWidth(text), fm.getHeight());
         linkAreas.add(new LinkArea(clickableArea, linkContent));
 
-        // Обновляем позицию курсора
         cursor.updatePosition(fm.stringWidth(text), 0);
     }
 
-    // Рендеринг изображения как ссылки
-    private void renderImageLink(Graphics2D g2d, HtmlElement element, String linkContent) {
+    private void renderImageLink(HtmlElement element, String linkContent) {
         try {
-            // Загружаем изображение
-            URL imgUrl = new URL(element.getContent());
-            Image img = ImageIO.read(imgUrl);
+            Image img = renderImage(element);
 
-            // Рендерим изображение
-            int x = cursor.getX();
-            int y = cursor.getY();
-            g2d.drawImage(img, x, y, null);
-
-            // Создаем кликабельную область
-            Rectangle clickableArea = new Rectangle(x, y, img.getWidth(null), img.getHeight(null));
+            Rectangle clickableArea = new Rectangle(cursor.getX(), cursor.getY(), img.getWidth(null), img.getHeight(null));
             linkAreas.add(new LinkArea(clickableArea, linkContent));
 
-            // Обновляем позицию курсора
             cursor.updatePosition(img.getWidth(null), 0);
         } catch (Exception e) {
             e.printStackTrace();
@@ -223,7 +169,7 @@ public class HtmlRenderer {
         g2d.setColor(Color.BLACK);
     }
 
-    private void renderImage(HtmlElement element) {
+    private Image renderImage(HtmlElement element) {
         try {
             URL imgUrl = new URL(element.getContent());
             Image img = ImageIO.read(imgUrl);
@@ -231,9 +177,11 @@ public class HtmlRenderer {
             g2d.drawImage(img, cursor.getX(), cursor.getY(), null);
             cursor.updatePosition(img.getWidth(null), img.getHeight(null));
             cursor.moveToNextLine();
+            return img;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     private void renderDefault(HtmlElement element) {
