@@ -10,7 +10,8 @@ public class HttpResponse {
     private final String htmlBody;
     private final List<CssResource> cssResources;
 
-    public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String htmlBody, List<CssResource> cssResources) {
+    public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, String htmlBody,
+            List<CssResource> cssResources) {
         this.statusCode = statusCode;
         this.statusMessage = statusMessage;
         this.headers = headers;

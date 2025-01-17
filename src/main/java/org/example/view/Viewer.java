@@ -73,4 +73,8 @@ public class Viewer extends JFrame {
     public String getSiteUrl() {
         return jTextField.getText();
     }
+
+    public Controller getController() {
+        return controller;
+    }
 }

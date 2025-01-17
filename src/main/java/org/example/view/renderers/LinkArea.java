@@ -1,8 +1,8 @@
 package org.example.view.renderers;
 
 import java.awt.Rectangle;
-// не знаю куда поместить этот класс, или может просто оставить методы в рендере? ( в классе HtmlRender )
-// почему решил его выделить в отедльный класс? В последующем его можно использовать для смены вида курсора
+import java.awt.Desktop;
+import java.net.URI;
 
 public class LinkArea {
     private final Rectangle area;
@@ -19,5 +19,20 @@ public class LinkArea {
 
     public String getUrl() {
         return url;
+    }
+
+    public boolean contains(int x, int y) {
+        return area.contains(x, y);
+    }
+
+    public void openUrlInBrowser() {
+        try {
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                desktop.browse(new URI(url));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

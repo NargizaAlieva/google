@@ -61,6 +61,18 @@ public class HtmlParser {
         return tagName.equals("img") || tagName.equals("br") || tagName.equals("hr") || tagName.equals("input") || tagName.equals("meta") || tagName.equals("link");
     }
 
+    public static List<String> extractLinks(String html) {
+        List<String> links = new ArrayList<>();
+        Pattern linkPattern = Pattern.compile("<a\\s+[^>]*href=\"([^\"]+)\"[^>]*>", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = linkPattern.matcher(html);
+
+        while (matcher.find()) {
+            links.add(matcher.group(1)); // Извлекаем ссылки из атрибута href
+        }
+
+        return links;
+    }
+
     private static String extractAttribute(String tag, String attributeName) {
         String pattern = attributeName + "=\"([^\"]*)\"";
         Pattern attrPattern = Pattern.compile(pattern);

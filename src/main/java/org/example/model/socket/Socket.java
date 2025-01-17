@@ -51,7 +51,8 @@ public class Socket {
                         return response;
                     }
 
-                    throw new IOException("HTTP error: " + response.getStatusCode() + " " + response.getStatusMessage());
+                    throw new IOException(
+                            "HTTP error: " + response.getStatusCode() + " " + response.getStatusMessage());
                 }
             }
             throw new IOException("Too many redirects");
@@ -114,7 +115,8 @@ public class Socket {
 
                     String cssUrl = cssPath.startsWith("http")
                             ? cssPath
-                            : baseUrl.getProtocol() + "://" + baseUrl.getHost() + (cssPath.startsWith("/") ? cssPath : "/" + cssPath);
+                            : baseUrl.getProtocol() + "://" + baseUrl.getHost()
+                                    + (cssPath.startsWith("/") ? cssPath : "/" + cssPath);
 
                     String cssContent = fetchCss(cssUrl);
                     if (cssContent != null) {

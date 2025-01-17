@@ -15,10 +15,7 @@ public class RenderTree {
         if (node == null) {
             return;
         }
-        // Вывести текущий узел.
         System.out.println(node);
-
-        // Рекурсивно обработать дочерние узлы.
         for (RenderNode child : node.getChildren()) {
             renderTree(child);
         }
