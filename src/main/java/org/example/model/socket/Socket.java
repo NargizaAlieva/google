@@ -1,11 +1,11 @@
 package org.example.model.socket;
-
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +22,9 @@ public class Socket {
             String host = url.getHost();
             int port = url.getProtocol().equalsIgnoreCase("https") ? 443 : 80;
             String path = url.getPath().isEmpty() ? "/" : url.getPath();
+            System.out.println("Using path: " + path);
+            InetAddress address = InetAddress.getByName(host);
+            System.out.println("Resolved IP: " + address.getHostAddress());
 
             SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
@@ -29,6 +32,7 @@ public class Socket {
                 try (SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(host, port)) {
                     sslSocket.setSoTimeout(TIMEOUT_MS);
                     sslSocket.startHandshake();
+                    sslSocket.setEnabledProtocols(new String[]{"TLSv1.2"});
 
                     sendHttpRequest(sslSocket, host, path);
 
@@ -36,20 +40,16 @@ public class Socket {
 
                     if (response.getStatusCode() == 301 || response.getStatusCode() == 302) {
                         String location = response.getHeaders().get("Location");
-                        if (location == null) {
-                            throw new IOException("Redirect location missing");
-                        }
-                        System.out.println("Redirecting to: " + location);
-                        url = new URL(urlString + location);
+                        if (location == null) throw new IOException("Redirect location missing");
+
+                        url = new URL(url, location);
                         host = url.getHost();
                         path = url.getPath().isEmpty() ? "/" : url.getPath();
                         port = url.getProtocol().equalsIgnoreCase("https") ? 443 : 80;
                         continue;
                     }
 
-                    if (response.getStatusCode() == 200) {
-                        return response;
-                    }
+                    if (response.getStatusCode() == 200) return response;
 
                     throw new IOException(
                             "HTTP error: " + response.getStatusCode() + " " + response.getStatusMessage());
@@ -62,25 +62,38 @@ public class Socket {
         }
     }
 
+
     private void sendHttpRequest(SSLSocket sslSocket, String host, String path) throws IOException {
-        PrintWriter writer = new PrintWriter(sslSocket.getOutputStream(), true);
-        writer.println("GET " + path + " HTTP/1.1");
-        writer.println("Host: " + host);
-        writer.println("Connection: close");
-        writer.println();
+        PrintWriter out = new PrintWriter(sslSocket.getOutputStream());
+        out.print("GET " + path + " HTTP/1.1\r\n");
+        out.print("Host: " + host + "\r\n");
+        out.print("Connection: close\r\n");
+        out.print("User-Agent: JavaClient/1.0\r\n");
+        out.print("\r\n");
+        out.flush();
     }
 
-    private HttpResponse readHttpResponse(SSLSocket sslSocket, URL baseUrl) throws IOException {
+
+
+
+
+    private HttpResponse readHttpResponse(SSLSocket sslSocket, URL url) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(sslSocket.getInputStream()));
         String statusLine = reader.readLine();
-        if (statusLine == null) {
-            throw new IOException("Empty response from server");
+
+        if (statusLine == null || !statusLine.startsWith("HTTP/")) {
+            throw new IOException("Invalid HTTP response: " + statusLine);
         }
 
+        // Extract status code and message from the status line
         String[] statusParts = statusLine.split(" ", 3);
+        if (statusParts.length < 3 || !statusParts[1].matches("\\d+")) {
+            throw new IOException("Malformed status line: " + statusLine);
+        }
         int statusCode = Integer.parseInt(statusParts[1]);
         String statusMessage = statusParts[2];
 
+        // Parse headers
         Map<String, String> headers = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null && !line.isEmpty()) {
@@ -89,19 +102,24 @@ public class Socket {
                 String headerName = line.substring(0, colonIndex).trim();
                 String headerValue = line.substring(colonIndex + 1).trim();
                 headers.put(headerName, headerValue);
+            } else {
+                throw new IOException("Malformed header: " + line);
             }
         }
 
+        // Read HTML body
         StringBuilder body = new StringBuilder();
         while ((line = reader.readLine()) != null) {
             body.append(line).append("\n");
         }
 
-        String htmlBody = body.toString().trim();
-        List<CssResource> cssResources = downloadCssFiles(htmlBody, baseUrl);
+        // Placeholder for CSS resources, if any parsing for them is later added
+        List<CssResource> cssResources = List.of(); // Empty list as a default
 
-        return new HttpResponse(statusCode, statusMessage, headers, htmlBody, cssResources);
+        // Construct and return the HttpResponse object
+        return new HttpResponse(statusCode, statusMessage, headers, body.toString(), cssResources);
     }
+
 
     private List<CssResource> downloadCssFiles(String html, URL baseUrl) {
         List<CssResource> cssResources = new ArrayList<>();
