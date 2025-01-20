@@ -17,6 +17,7 @@ public class CssParser {
 
     public CssTree parse(List<CssResource> cssResources) {
         for (CssResource cssResource : cssResources) {
+            System.out.println(cssResource.getContent());
             String[] blocks = cssResource.getContent().split("}");
 
             for (String block : blocks) {

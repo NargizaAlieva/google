@@ -1,15 +1,18 @@
 package org.example.model.html;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HtmlParser {
-    public HtmlElement parseHtml(String html) {
+    public HtmlElement parseHtml(String html, URL url){
         HtmlElement root = new HtmlElement("root", "");
         List<HtmlElement> stack = new ArrayList<>();
         stack.add(root);
+        System.out.println(html);
 
         Pattern pattern = Pattern.compile("(<[^>]+>)|([^<]+)");
         Matcher matcher = pattern.matcher(html);

@@ -2,13 +2,36 @@ package org.example.model.renderTree;
 
 public class RenderTree {
     private RenderNode root;
+    private int windowWidth = 2000;
+    private int windowHeight = 1000;
 
-    public RenderTree(RenderNode root) {
-        this.root = root;
+    public RenderTree() {
     }
 
     public RenderNode getRoot() {
         return root;
+    }
+
+    public void setRoot(RenderNode root) {
+        this.root = root;
+        this.root.setWidth(windowWidth);
+        this.root.setHeight(windowHeight);
+    }
+
+    public int getWindowWidth() {
+        return windowWidth;
+    }
+
+    public void setWindowWidth(int windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
+    public int getWindowHeight() {
+        return windowHeight;
+    }
+
+    public void setWindowHeight(int windowHeight) {
+        this.windowHeight = windowHeight;
     }
 
     public void renderTree(RenderNode node) {

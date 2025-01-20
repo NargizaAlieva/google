@@ -73,8 +73,9 @@ public class Model {
 
     public HtmlElement parseHtml() {
         if (httpResponse != null) {
-            HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()));
+            HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()), getHttpResponse().getUrl());
             CssTree cssTree = cssParser.parse(getHttpResponse().getCssResources());
+            System.out.println(getHttpResponse().getCssResources());
             RenderTree renderTree = mergeCssomDom.mergeCSSOM_DOM(dom, cssTree);
             for (CssRule css : cssTree.getRules()) {
                 cssParser.findCssOfHtml(dom, css.getSelector(), css);
@@ -83,7 +84,7 @@ public class Model {
             }
             return dom;
         }
-        return htmlParser.parseHtml(extractBodyContent(getHtml()));
+        return htmlParser.parseHtml(extractBodyContent(getHtml()), getHttpResponse().getUrl());
     }
 
     private String extractBodyContent(String html) {

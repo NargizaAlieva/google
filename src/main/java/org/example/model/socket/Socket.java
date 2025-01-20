@@ -117,7 +117,7 @@ public class Socket {
         List<CssResource> cssResources = List.of(); // Empty list as a default
 
         // Construct and return the HttpResponse object
-        return new HttpResponse(statusCode, statusMessage, headers, body.toString(), cssResources);
+        return new HttpResponse(statusCode, statusMessage, headers, body.toString(), cssResources, url);
     }
 
 

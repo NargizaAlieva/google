@@ -6,16 +6,21 @@ import java.util.List;
 
 public class RenderNode {
     private String tagName;
-    private List<RenderNode> children;
+    private ArrayList<RenderNode> children;
     private String textContent;
     private HashMap<String, String> appliedStyles; // Все применённые стили.
-    private int x, y, width, height;
+    private double x, y, height;
+    private double width;
     private RenderNode parent;
 
     public RenderNode(String tagName) {
         this.tagName = tagName;
         this.children = new ArrayList<>();
         this.appliedStyles = new HashMap<>();
+        this.height = -1;
+        this.width = -1;
+        this.x = -1;
+        this.y = -1;
     }
 
     public void addChild(RenderNode child) {
@@ -48,7 +53,7 @@ public class RenderNode {
         return tagName;
     }
 
-    public List<RenderNode> getChildren() {
+    public ArrayList<RenderNode> getChildren() {
         return children;
     }
 
@@ -62,20 +67,32 @@ public class RenderNode {
         this.width = width;
         this.height = height;
     }
+    public void setX(double x) {
+        this.x = x;
+    }
+    public void setY(double y) {
+        this.y = y;
+    }
+    public void setWidth(double width) {
+        this.width = width;
+    }
+    public void setHeight(double height) {
+        this.height = height;
+    }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
-    public int getWidth() {
+    public double getWidth() {
         return width;
     }
 
-    public int getHeight() {
+    public double getHeight() {
         return height;
     }
 
