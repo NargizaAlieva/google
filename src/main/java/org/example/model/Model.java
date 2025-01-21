@@ -5,7 +5,7 @@ import org.example.model.css.cssom.CssRule;
 import org.example.model.css.cssom.CssTree;
 import org.example.model.html.HtmlElement;
 import org.example.model.html.HtmlParser;
-import org.example.model.renderTree.Merge_CSSOM_DOM;
+import org.example.model.renderTree.MergeCssomDom;
 import org.example.model.renderTree.RenderNode;
 import org.example.model.renderTree.RenderTree;
 import org.example.model.socket.HttpResponse;
@@ -22,14 +22,14 @@ public class Model {
     private final HtmlParser htmlParser;
     private final CssParser cssParser;
     private HttpResponse httpResponse;
-    private Merge_CSSOM_DOM mergeCssomDom;
+    private MergeCssomDom mergeCssomDom;
 
     public Model(Viewer viewer) {
         this.viewer = viewer;
         this.socket = new Socket();
         htmlParser = new HtmlParser();
         cssParser = new CssParser();
-        mergeCssomDom = new Merge_CSSOM_DOM();
+        mergeCssomDom = new MergeCssomDom();
     }
 
     public void getHtml(String siteUrl) {
@@ -76,7 +76,7 @@ public class Model {
             HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()), getHttpResponse().getUrl());
             CssTree cssTree = cssParser.parse(getHttpResponse().getCssResources());
             System.out.println(getHttpResponse().getCssResources());
-            RenderTree renderTree = mergeCssomDom.mergeCSSOM_DOM(dom, cssTree);
+            RenderTree renderTree = mergeCssomDom.mergeCssomDom(dom, cssTree);
             for (CssRule css : cssTree.getRules()) {
                 cssParser.findCssOfHtml(dom, css.getSelector(), css);
             }

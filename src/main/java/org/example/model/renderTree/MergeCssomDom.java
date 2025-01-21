@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class Merge_CSSOM_DOM {
+public class MergeCssomDom {
     private RenderTree renderTree;
     private final Map<String, Integer> tagSize = new HashMap<>() {{
         put("h1", 32);
@@ -30,7 +30,7 @@ public class Merge_CSSOM_DOM {
         put("h6", 10);
     }};
 
-    public RenderTree mergeCSSOM_DOM(HtmlElement htmlElement, CssTree cssTree) {
+    public RenderTree mergeCssomDom(HtmlElement htmlElement, CssTree cssTree) {
         renderTree = new RenderTree();
         RenderNode rootRenderNode = new RenderNode(htmlElement.getTag());
         rootRenderNode.setWidth(renderTree.getWindowWidth());
@@ -53,42 +53,34 @@ public class Merge_CSSOM_DOM {
         return renderTree;
     }
     private void setXY(RenderNode renderNode) {
-        double parentRemainWidth = renderNode.getWidth(); // Оставшаяся ширина родителя
-        double lastX = renderNode.getX(); // Начальная X координата
-        double lastY = renderNode.getY(); // Начальная Y координата
-        double rowHeight = 0; // Высота текущего ряда (для корректного сдвига по Y)
+        double parentRemainWidth = renderNode.getWidth();
+        double lastX = renderNode.getX();
+        double lastY = renderNode.getY();
+        double rowHeight = 0;
 
-        // Проходим по всем дочерним элементам
         for (RenderNode child : renderNode.getChildren()) {
-            if (child.getX() == -1){
-                setXY(child);
-            }
             if (parentRemainWidth >= child.getWidth()) {
-                // Если дочерний элемент помещается в оставшуюся ширину
-                child.setX(lastX); // Устанавливаем координату X для дочернего элемента
-                child.setY(lastY); // Устанавливаем координату Y для дочернего элемента
+                child.setX(lastX);
+                child.setY(lastY);
 
-                lastX += child.getWidth(); // Увеличиваем X для следующего элемента в текущем ряду
-                parentRemainWidth -= child.getWidth(); // Уменьшаем оставшуюся ширину родителя
+                lastX += child.getWidth();
+                parentRemainWidth -= child.getWidth();
 
-                rowHeight = Math.max(rowHeight, child.getHeight()); // Обновляем высоту текущего ряда
+                rowHeight = Math.max(rowHeight, child.getHeight());
             } else {
-                // Если дочерний элемент не помещается в текущий ряд, начинаем новый ряд
-                lastX = renderNode.getX(); // Сбрасываем X на начало ряда
-                lastY += rowHeight; // Сдвигаем Y на высоту текущего ряда
-                parentRemainWidth = renderNode.getWidth(); // Восстанавливаем ширину родителя
+                lastX = renderNode.getX();
+                lastY += rowHeight;
+                parentRemainWidth = renderNode.getWidth();
 
-                // Устанавливаем координаты для нового ряда
-                child.setX(lastX); // Устанавливаем координату X для дочернего элемента
-                child.setY(lastY); // Устанавливаем координату Y для дочернего элемента
+                child.setX(lastX);
+                child.setY(lastY);
 
-                lastX += child.getWidth(); // Начинаем новый ряд, увеличиваем X для текущего элемента
-                parentRemainWidth -= child.getWidth(); // Уменьшаем оставшуюся ширину родителя
+                lastX += child.getWidth();
+                parentRemainWidth -= child.getWidth();
 
-                rowHeight = child.getHeight(); // Обновляем высоту ряда для следующего элемента
+                rowHeight = child.getHeight();
             }
 
-            // Рекурсивно вызываем setXY для дочерних элементов
             setXY(child);
         }
     }
@@ -101,43 +93,35 @@ public class Merge_CSSOM_DOM {
          }
     }
     private double calculateHeightOfChildren(RenderNode renderNode) {
-        double height = 0; // Итоговая высота родительского элемента
-        double remainingWidth = renderNode.getWidth(); // Ширина, оставшаяся для размещения дочерних элементов
-        ArrayList<Double> rowHeights = new ArrayList<>(); // Список для хранения высот текущего ряда
-        ArrayList<RenderNode> children = renderNode.getChildren(); // Дочерние элементы
+        double height = 0;
+        double remainingWidth = renderNode.getWidth();
+        ArrayList<Double> rowHeights = new ArrayList<>();
+        ArrayList<RenderNode> children = renderNode.getChildren();
 
         if (children == null) {
             return height;
         }
 
         for (RenderNode child : children) {
-            // Если элемент - это изображение
             if ("img".equals(child.getTagName())) {
-                // Вычисляем высоту изображения и устанавливаем её
-                // child.setHeight(getImageHeight(child)); // Метод, который получает высоту изображения
+                // child.setHeight(getImageHeight(child));
             } else if (child.getHeight() == -1) {
-                // Если высота дочернего элемента не задана (-1), вычисляем её рекурсивно
                 child.setHeight(calculateHeightOfChildren(child));
             }
 
-            // Проверяем, помещается ли текущий элемент по ширине
             if (remainingWidth >= child.getWidth()) {
-                // Добавляем высоту элемента в текущий ряд
                 rowHeights.add(child.getHeight());
                 remainingWidth -= child.getWidth();
             } else {
-                // Если элемент не помещается, добавляем высоту самого высокого элемента в ряду
                 if (!rowHeights.isEmpty()) {
-                    height += getMaxHeight(rowHeights); // Берём самый высокий элемент
-                    rowHeights.clear(); // Очищаем текущий ряд
+                    height += getMaxHeight(rowHeights);
+                    rowHeights.clear();
                 }
-                // Начинаем новый ряд с текущего элемента
                 rowHeights.add(child.getHeight());
                 remainingWidth = renderNode.getWidth() - child.getWidth();
             }
         }
 
-        // Добавляем высоту последнего ряда (если он не пустой)
         if (!rowHeights.isEmpty()) {
             height += getMaxHeight(rowHeights);
         }
@@ -145,23 +129,20 @@ public class Merge_CSSOM_DOM {
         return height;
     }
 
-    // Метод для получения высоты изображения
     private int getImageHeight(RenderNode imgNode) {
-        String imagePath = imgNode.getTextContent(); // Предполагается, что у RenderNode есть абсолютный путь к изображению
+        String imagePath = imgNode.getTextContent();
 
         if (imagePath == null || imagePath.isEmpty()) {
-            return 0; // Если путь не задан, возвращаем 0
+            return 0;
         }
 
         try {
             BufferedImage img;
 
             if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-                // Загружаем изображение из URL
                 URL url = new URL(imagePath);
                 img = ImageIO.read(url);
             } else {
-                // Загружаем изображение из локального файла
                 img = ImageIO.read(new File(imagePath));
             }
             System.out.println("Sigma");
@@ -171,14 +152,13 @@ public class Merge_CSSOM_DOM {
             }
             System.out.println("Sigma");
 
-            return img != null ? img.getHeight() : 0; // Возвращаем высоту изображения
+            return img != null ? img.getHeight() : 0;
         } catch (IOException e) {
             e.printStackTrace();
-            return 0; // Возвращаем 0, если не удалось получить высоту изображения
+            return 0;
         }
     }
 
-    // Метод для получения максимальной высоты из списка высот
     private double getMaxHeight(ArrayList<Double> heights) {
         double maxHeight = 0;
         for (double h : heights) {
@@ -265,23 +245,9 @@ public class Merge_CSSOM_DOM {
         String fontName = renderNode.getAppliedStyles().getOrDefault("font-family", "Arial");
         int fontSize;
 
-        // Задаём размер шрифта в зависимости от тега
-        if (tagName.equalsIgnoreCase("h1")) {
-            fontSize = 32; // Размер шрифта для h1 (можно настроить)
-        } else if (tagName.equalsIgnoreCase("h2")) {
-            fontSize = 24; // Размер шрифта для h2
-        } else if (tagName.equalsIgnoreCase("h3")) {
-            fontSize = 18; // Размер шрифта для h3
-        } else if (tagName.equalsIgnoreCase("h4")) {
-            fontSize = 16; // Размер шрифта для h2
-        } else if (tagName.equalsIgnoreCase("h5")) {
-            fontSize = 13; // Размер шрифта для h3
-        } else if (tagName.equalsIgnoreCase("h6")) {
-            fontSize = 10; // Размер шрифта для h3
-        }else {
-            // Используем размер шрифта из стилей или значение по умолчанию
-            fontSize = Integer.parseInt(renderNode.getAppliedStyles().getOrDefault("font-size", "12").replace("px", "").trim());
-        }
+        // Используем размер шрифта из стилей или значение по умолчанию
+        fontSize = Integer.parseInt(renderNode.getAppliedStyles().getOrDefault("font-size", "12").replace("px", "").trim());
+
 
         // Устанавливаем стиль шрифта (по умолчанию - обычный)
         int fontStyle = Font.PLAIN;
@@ -290,14 +256,11 @@ public class Merge_CSSOM_DOM {
             fontStyle = Font.BOLD;
         }
 
-        // Создаём объект шрифта
         Font font = new Font(fontName, fontStyle, fontSize);
 
-        // Создаём временный компонент для получения метрик шрифта
         Canvas dummyCanvas = new Canvas();
         FontMetrics metrics = dummyCanvas.getFontMetrics(font);
 
-        // Рассчитываем высоту текста
         int textHeight = metrics.getHeight();
         int textWidth = metrics.stringWidth(textContent);
         renderNode.setHeight(textHeight);
