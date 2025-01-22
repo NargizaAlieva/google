@@ -12,7 +12,6 @@ public class HtmlParser {
         HtmlElement root = new HtmlElement("root", "");
         List<HtmlElement> stack = new ArrayList<>();
         stack.add(root);
-        System.out.println(html);
 
         Pattern pattern = Pattern.compile("(<[^>]+>)|([^<]+)");
         Matcher matcher = pattern.matcher(html);

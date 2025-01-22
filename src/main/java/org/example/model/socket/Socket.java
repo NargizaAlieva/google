@@ -22,9 +22,6 @@ public class Socket {
             String host = url.getHost();
             int port = url.getProtocol().equalsIgnoreCase("https") ? 443 : 80;
             String path = url.getPath().isEmpty() ? "/" : url.getPath();
-            System.out.println("Using path: " + path);
-            InetAddress address = InetAddress.getByName(host);
-            System.out.println("Resolved IP: " + address.getHostAddress());
 
             SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
@@ -40,19 +37,25 @@ public class Socket {
 
                     if (response.getStatusCode() == 301 || response.getStatusCode() == 302) {
                         String location = response.getHeaders().get("Location");
-                        if (location == null) throw new IOException("Redirect location missing");
+                        if (location == null) {
+                            throw new IOException("Redirect location missing");
+                        }
 
+                        // Обработка относительных и абсолютных URL
                         url = new URL(url, location);
                         host = url.getHost();
                         path = url.getPath().isEmpty() ? "/" : url.getPath();
                         port = url.getProtocol().equalsIgnoreCase("https") ? 443 : 80;
+
+                        System.out.println("Redirecting to: " + url);
                         continue;
                     }
 
-                    if (response.getStatusCode() == 200) return response;
+                    if (response.getStatusCode() == 200) {
+                        return response;
+                    }
 
-                    throw new IOException(
-                            "HTTP error: " + response.getStatusCode() + " " + response.getStatusMessage());
+                    throw new IOException("HTTP error: " + response.getStatusCode() + " " + response.getStatusMessage());
                 }
             }
             throw new IOException("Too many redirects");
@@ -62,22 +65,16 @@ public class Socket {
         }
     }
 
-
     private void sendHttpRequest(SSLSocket sslSocket, String host, String path) throws IOException {
-        PrintWriter out = new PrintWriter(sslSocket.getOutputStream());
-        out.print("GET " + path + " HTTP/1.1\r\n");
-        out.print("Host: " + host + "\r\n");
-        out.print("Connection: close\r\n");
-        out.print("User-Agent: JavaClient/1.0\r\n");
-        out.print("\r\n");
-        out.flush();
+        PrintWriter writer = new PrintWriter(sslSocket.getOutputStream(), true);
+        writer.println("GET " + path + " HTTP/1.1");
+        writer.println("Host: " + host);
+        writer.println("Connection: close");
+        writer.println("User-Agent: JavaClient/1.0");
+        writer.println();
     }
 
-
-
-
-
-    private HttpResponse readHttpResponse(SSLSocket sslSocket, URL url) throws IOException {
+    private HttpResponse readHttpResponse(SSLSocket sslSocket, URL baseUrl) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(sslSocket.getInputStream()));
         String statusLine = reader.readLine();
 
@@ -85,7 +82,7 @@ public class Socket {
             throw new IOException("Invalid HTTP response: " + statusLine);
         }
 
-        // Extract status code and message from the status line
+        // Извлечение кода состояния и сообщения
         String[] statusParts = statusLine.split(" ", 3);
         if (statusParts.length < 3 || !statusParts[1].matches("\\d+")) {
             throw new IOException("Malformed status line: " + statusLine);
@@ -93,7 +90,7 @@ public class Socket {
         int statusCode = Integer.parseInt(statusParts[1]);
         String statusMessage = statusParts[2];
 
-        // Parse headers
+        // Парсинг заголовков
         Map<String, String> headers = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null && !line.isEmpty()) {
@@ -107,19 +104,17 @@ public class Socket {
             }
         }
 
-        // Read HTML body
+        // Чтение HTML тела
         StringBuilder body = new StringBuilder();
         while ((line = reader.readLine()) != null) {
             body.append(line).append("\n");
         }
 
-        // Placeholder for CSS resources, if any parsing for them is later added
-        List<CssResource> cssResources = List.of(); // Empty list as a default
+        String htmlBody = body.toString().trim();
+        List<CssResource> cssResources = downloadCssFiles(htmlBody, baseUrl);
 
-        // Construct and return the HttpResponse object
-        return new HttpResponse(statusCode, statusMessage, headers, body.toString(), cssResources, url);
+        return new HttpResponse(statusCode, statusMessage, headers, htmlBody, cssResources, baseUrl);
     }
-
 
     private List<CssResource> downloadCssFiles(String html, URL baseUrl) {
         List<CssResource> cssResources = new ArrayList<>();
