@@ -8,13 +8,13 @@ public class RenderNode {
     private String tagName;
     private ArrayList<RenderNode> children;
     private String textContent;
-    private HashMap<String, String> appliedStyles; // Все применённые стили.
-    private double x, y, height;
-    private double width;
+    private HashMap<String, String> appliedStyles;
+    private double x, y, height, width;
     private RenderNode parent;
 
     public RenderNode(String tagName) {
         this.tagName = tagName;
+        this.textContent = "";
         this.children = new ArrayList<>();
         this.appliedStyles = new HashMap<>();
         this.height = -1;
@@ -80,12 +80,12 @@ public class RenderNode {
         this.height = height;
     }
 
-    public double getX() {
-        return x;
+    public int getX() {
+        return (int) x;
     }
 
-    public double getY() {
-        return y;
+    public int getY() {
+        return (int) y;
     }
 
     public double getWidth() {
@@ -94,18 +94,5 @@ public class RenderNode {
 
     public double getHeight() {
         return height;
-    }
-
-    @Override
-    public String toString() {
-        return "RenderNode{" +
-                "tagName='" + tagName + '\'' +
-                ", x=" + x +
-                ", y=" + y +
-                ", width=" + width +
-                ", height=" + height +
-                ", textContent='" + textContent + '\'' +
-                ", appliedStyles=" + appliedStyles +
-                '}';
     }
 }

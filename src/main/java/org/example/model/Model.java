@@ -73,7 +73,7 @@ public class Model {
 
     public HtmlElement parseHtml() {
         if (httpResponse != null) {
-            HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()), getHttpResponse().getUrl());
+            HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()));
             CssTree cssTree = cssParser.parse(getHttpResponse().getCssResources());
             System.out.println(getHttpResponse().getCssResources());
             RenderTree renderTree = mergeCssomDom.mergeCssomDom(dom, cssTree);
@@ -85,7 +85,25 @@ public class Model {
             }
             return dom;
         }
-        return htmlParser.parseHtml(extractBodyContent(getHtml()), getHttpResponse().getUrl());
+        return htmlParser.parseHtml(extractBodyContent(getHtml()));
+    }
+
+    public RenderTree parse() {
+        HtmlElement dom;
+        if (httpResponse != null) {
+            dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()));
+        } else {
+            dom = htmlParser.parseHtml(extractBodyContent(getHtml()));
+        }
+        CssTree cssTree = cssParser.parse(getHttpResponse().getCssResources());
+        System.out.println(getHttpResponse().getCssResources());
+        RenderTree renderTree = mergeCssomDom.mergeCssomDom(dom, cssTree);
+        for (CssRule css : cssTree.getRules()) {
+            System.out.println(css.toCssString());
+            cssParser.findCssOfHtml(dom, css.getSelector(), css);
+        }
+
+        return renderTree;
     }
 
     private String extractBodyContent(String html) {

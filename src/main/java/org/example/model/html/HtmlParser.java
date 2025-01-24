@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HtmlParser {
-    public HtmlElement parseHtml(String html, URL url){
+    public HtmlElement parseHtml(String html){
         HtmlElement root = new HtmlElement("root", "");
         List<HtmlElement> stack = new ArrayList<>();
         stack.add(root);

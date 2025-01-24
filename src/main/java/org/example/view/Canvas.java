@@ -5,6 +5,7 @@ import org.example.model.Model;
 import org.example.model.html.HtmlElement;
 import org.example.view.renderers.HtmlRenderer;
 import org.example.view.renderers.LinkArea;
+import org.example.view.renderers.Renderer;
 
 import javax.swing.JPanel;
 import java.awt.Dimension;
@@ -18,11 +19,13 @@ public class Canvas extends JPanel {
     private final Model model;
     private final Cursor cursor;
     private final HtmlRenderer htmlRenderer;
+    private final Renderer renderer;
     private final List<LinkArea> linkAreas;
 
     public Canvas(Model model) {
         this.model = model;
         cursor = new Cursor(getWidth() > 0 ? getWidth() : 1400);
+        renderer = new Renderer();
         htmlRenderer = new HtmlRenderer(cursor);
         setBackground(Color.WHITE);
         linkAreas = new ArrayList<>();
@@ -43,6 +46,7 @@ public class Canvas extends JPanel {
         g2d.fillRect(0, 0, getWidth(), getHeight());
         linkAreas.clear();
         HtmlElement dom = model.parseHtml();
+//        renderer.renderElement(g2d, model.parse());
         htmlRenderer.renderElement(g2d, dom);
         updateLinkAreas();
         revalidate();
