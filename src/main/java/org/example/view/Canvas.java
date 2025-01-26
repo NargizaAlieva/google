@@ -46,8 +46,8 @@ public class Canvas extends JPanel {
         g2d.fillRect(0, 0, getWidth(), getHeight());
         linkAreas.clear();
         HtmlElement dom = model.parseHtml();
-//        renderer.renderElement(g2d, model.parse());
-        htmlRenderer.renderElement(g2d, dom);
+        renderer.renderElement(g2d, model.parse());
+        //htmlRenderer.renderElement(g2d, dom);
         updateLinkAreas();
         revalidate();
     }

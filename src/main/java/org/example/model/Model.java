@@ -73,7 +73,7 @@ public class Model {
 
     public HtmlElement parseHtml() {
         if (httpResponse != null) {
-            HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()));
+            HtmlElement dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()), getHttpResponse().getUrl());
             CssTree cssTree = cssParser.parse(getHttpResponse().getCssResources());
             System.out.println(getHttpResponse().getCssResources());
             RenderTree renderTree = mergeCssomDom.mergeCssomDom(dom, cssTree);
@@ -85,15 +85,15 @@ public class Model {
             }
             return dom;
         }
-        return htmlParser.parseHtml(extractBodyContent(getHtml()));
+        return htmlParser.parseHtml(extractBodyContent(getHtml()), getHttpResponse().getUrl());
     }
 
     public RenderTree parse() {
         HtmlElement dom;
         if (httpResponse != null) {
-            dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()));
+            dom = htmlParser.parseHtml(extractBodyContent(getHttpResponse().getHtmlBody()), getHttpResponse().getUrl());
         } else {
-            dom = htmlParser.parseHtml(extractBodyContent(getHtml()));
+            dom = htmlParser.parseHtml(extractBodyContent(getHtml()), null);
         }
         CssTree cssTree = cssParser.parse(getHttpResponse().getCssResources());
         System.out.println(getHttpResponse().getCssResources());

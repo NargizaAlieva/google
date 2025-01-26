@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HtmlParser {
-    public HtmlElement parseHtml(String html){
+    public HtmlElement parseHtml(String html, URL url){
         HtmlElement root = new HtmlElement("root", "");
         List<HtmlElement> stack = new ArrayList<>();
         stack.add(root);
@@ -37,7 +37,12 @@ public class HtmlParser {
                         if (src.startsWith("http")) {
                             element.setContent(src);
                         } else {
-                            element.setContent(getBaseUrl(url) + src);
+                            if (url != null) {
+                                element.setContent(getBaseUrl(url) + src);
+                            } else {
+                                element.setContent(src);
+                            }
+
                         }
                     } else if (tagName.equals("a")) {
                         String href = extractAttribute(tag, "href");

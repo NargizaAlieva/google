@@ -132,7 +132,7 @@ public class MergeCssomDom {
 
         for (RenderNode child : children) {
             if ("img".equals(child.getTagName())) {
-                // child.setHeight(getImageHeight(child));
+                child.setHeight(getImageHeight(child));
             } else if (child.getHeight() == -1) {
                 child.setHeight(calculateHeightOfChildren(child));
             }
