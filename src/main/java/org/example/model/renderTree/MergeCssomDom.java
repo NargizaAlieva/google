@@ -18,10 +18,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MergeCssomDom {
     private RenderTree renderTree;
-    private final Map<String, Integer> tagSize = new HashMap<>() {{
+    private final HashMap<String, Integer> tagSize = new HashMap<>() {{
         put("h1", 32);
         put("h2", 24);
         put("h3", 18);
@@ -29,6 +31,13 @@ public class MergeCssomDom {
         put("h5", 13);
         put("h6", 10);
     }};
+    private final Set<String> blockElements = Set.of(
+            "div", "section", "article", "aside", "header", "footer", "main", "nav",
+            "p", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "blockquote",
+            "ul", "ol", "li", "dl", "dt", "dd",
+            "figure", "figcaption", "hr", "table", "caption", "thead", "tbody", "tfoot", "tr", "th", "td",
+            "form", "fieldset", "legend", "textarea", "address", "details", "summary"
+    );
 
     public RenderTree mergeCssomDom(HtmlElement htmlElement, CssTree cssTree) {
         renderTree = new RenderTree();
@@ -44,6 +53,7 @@ public class MergeCssomDom {
         setCssToChildren(rootRenderNode);
         setWidthHeightToChildren(rootRenderNode);
         hTagsInHeight(rootRenderNode);
+        finalCalculationOfWidth(rootRenderNode);
         finalCalculationOfHeight(rootRenderNode);
         setXY(rootRenderNode);
 
@@ -52,6 +62,24 @@ public class MergeCssomDom {
 
         return renderTree;
     }
+    private void finalCalculationOfWidth(RenderNode rootRenderNode) {
+        double currentWidth = 0;
+        if (!blockElements.contains(rootRenderNode.getTagName())){
+            for (RenderNode child : rootRenderNode.getChildren()) {
+                if (child.getWidth() < 0){
+                    finalCalculationOfWidth(child);
+                }
+                currentWidth += child.getWidth();
+            }
+            rootRenderNode.setWidth(currentWidth);
+        }
+        if (!rootRenderNode.getChildren().isEmpty()){
+            for (RenderNode child : rootRenderNode.getChildren()) {
+                finalCalculationOfWidth(child);
+            }
+        }
+    }
+
     private void setXY(RenderNode renderNode) {
         double parentRemainWidth = renderNode.getWidth();
         double lastX = renderNode.getX();
@@ -265,7 +293,8 @@ public class MergeCssomDom {
         int textWidth = metrics.stringWidth(textContent);
         renderNode.setHeight(textHeight);
         renderNode.setWidth(textWidth);
-        if (!Objects.equals(renderNode.getParent().getTagName(), "div")){
+        renderNode.getParent().setWidth(textWidth);
+        if (Objects.equals(renderNode.getParent().getTagName(), "div")){
             double parentWidth = renderNode.getWidth();
             renderNode.getParent().setWidth(textWidth + parentWidth);
             renderNode.getParent().setHeight(textHeight);
@@ -295,15 +324,8 @@ public class MergeCssomDom {
     private void setWidthToChildren(RenderNode renderNode, RenderNode child) {
         HashMap<String, String> styles = child.getAppliedStyles();
 
-        if (styles.get("width") != null && !styles.get("width").isEmpty() || (styles.get("max-width") != null && !styles.get("max-width").isEmpty())) {
-            if (styles.get("max-width") != null && !styles.get("max-width").isEmpty()) {
-                if (styles.get("max-width").contains("px")) {
-                    child.setWidth(Double.parseDouble(styles.get("max-width").replace("px", "").trim()));
-                } else if (styles.get("max-width").contains("%")) {
-                    double maxWidthPercent = Double.parseDouble(styles.get("max-width").replace("%", "").trim());
-                    child.setWidth((renderNode.getWidth() / 100.0) * maxWidthPercent);
-                }
-            } else {
+        if (styles.get("width") != null && !styles.get("width").isEmpty()) {
+             if (styles.get("width") != null && !styles.get("width").isEmpty()) {
                 if (styles.get("width").contains("px")) {
                     child.setWidth(Double.parseDouble(styles.get("width").replace("px", "").trim()));
                 } else if (styles.get("width").contains("%")) {
@@ -312,7 +334,9 @@ public class MergeCssomDom {
                 }
             }
         } else {
-            child.setWidth(child.getParent().getWidth());
+            if (blockElements.contains(renderNode.getTagName())){
+                child.setWidth(renderNode.getWidth());
+            }
         }
     }
 
@@ -322,16 +346,27 @@ public class MergeCssomDom {
         if (htmlElement.getClasses() == null || selectors.isEmpty() || cssRule == null) {
             return;
         }
-
         Set<String> elementClasses = new HashSet<>(Arrays.asList(htmlElement.getClasses()));
-
         String currentSelector = selectors.get(0);
+        if (currentSelector.equals("div")){
+            return;
+        }
+
         if (htmlElement.getIds() != null){
             Set<String> elementIds = new HashSet<>(Arrays.asList(htmlElement.getIds()));
             if (currentSelector.startsWith("#") && elementIds.contains(currentSelector.substring(1))) {
                 selectors = selectors.subList(1, selectors.size());
                 if (selectors.isEmpty()) {
-                    computeStyles(cssRule, renderNode);
+                    if (cssRule.getMedia() == null && cssRule.getMedia().isEmpty()){
+                        computeStyles(cssRule, renderNode);
+                    }  else {
+                        System.out.println(matchMedia(cssRule.getMedia()));
+                        System.out.println("hello world");
+                        System.out.println(cssRule.getMedia());
+                        if (matchMedia(cssRule.getMedia())){
+                            System.out.println("Miside");
+                        }
+                    }
                     return;
                 }
             }
@@ -340,7 +375,18 @@ public class MergeCssomDom {
         if (elementClasses.contains(currentSelector) || htmlElement.getTag().equals(currentSelector)) {
             selectors = selectors.subList(1, selectors.size());
             if (selectors.isEmpty()) {
-                computeStyles(cssRule, renderNode);
+                if (cssRule.getMedia() != null && !cssRule.getMedia().isEmpty()) {
+                    System.out.println(matchMedia(cssRule.getMedia()));
+                    System.out.println("hello world");
+                    System.out.println(cssRule.getMedia());
+                    System.out.println(cssRule.toCssString());
+                    if (matchMedia(cssRule.getMedia())){
+                        System.out.println("Miside");
+                        computeStyles(cssRule, renderNode);
+                    }
+                } else {
+                    computeStyles(cssRule, renderNode);
+                }
                 return;
             }
         }
@@ -349,12 +395,86 @@ public class MergeCssomDom {
             findCssOfRenderTree(htmlElement.getChildren().get(i), renderNode.getChildren().get(i), selectors, cssRule);
         }
     }
+    public boolean matchMedia(String media) {
+        int height = renderTree.getWindowHeight();
+        int width = renderTree.getWindowWidth();
+
+        // Разделяем медиа-запросы на отдельные условия
+        String[] conditions = media.split("and");
+
+        for (String condition : conditions) {
+            condition = condition.trim();
+
+            // Извлекаем ключ-значение из каждого условия
+            Pattern pattern = Pattern.compile("\\(([^)]*)\\)");
+            Matcher matcher = pattern.matcher(condition);
+
+            if (matcher.find()) {
+                String keyValue = matcher.group(1).trim();
+                String[] listOfKeyValue = keyValue.split(":", 2);
+
+                if (listOfKeyValue.length != 2) {
+                    // Если условие некорректное, возвращаем false
+                    return false;
+                }
+
+                String key = listOfKeyValue[0].trim();
+                String value = listOfKeyValue[1].trim();
+
+                int cssValue;
+                try {
+                    cssValue = Integer.parseInt(value.replace("px", "").replace("%", "").trim());
+                } catch (NumberFormatException e) {
+                    // Пропускаем некорректные значения
+                    return false;
+                }
+
+                switch (key) {
+                    case "max-width":
+                        if (width > cssValue) {
+                            return false;
+                        }
+                        break;
+                    case "min-width":
+                        if (width < cssValue) {
+                            return false;
+                        }
+                        break;
+                    case "max-height":
+                        if (height > cssValue) {
+                            return false;
+                        }
+                        break;
+                    case "min-height":
+                        if (height < cssValue) {
+                            return false;
+                        }
+                        break;
+                    case "orientation":
+                        String orientation = cssValue == 0 ? "portrait" : "landscape";
+                        if (!value.equalsIgnoreCase(orientation)) {
+                            return false;
+                        }
+                        break;
+                    default:
+                        // Неизвестное условие
+                        return false;
+                }
+            } else {
+                // Если условие не подходит под шаблон
+                return false;
+            }
+        }
+
+        // Если все условия выполнены
+        return true;
+    }
 
     private void setCssToChildren(RenderNode renderNode) {
         for (RenderNode child : renderNode.getChildren()) {
             HashMap<String, String> parentStyles = renderNode.getAppliedStyles();
             for (Map.Entry<String, String> entry : parentStyles.entrySet()) {
-                if (entry.getKey().equals("height")){
+                if (entry.getKey().equals("height") || entry.getKey().equals("width") || entry.getKey().equals("padding") || entry.getKey().equals("border") || entry.getKey().equals("margin")) {
                     continue;
                 }
                 child.getAppliedStyles().putIfAbsent(entry.getKey(), entry.getValue());

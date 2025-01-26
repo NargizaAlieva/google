@@ -34,7 +34,11 @@ public class HtmlParser {
 
                     if (tagName.equals("img")) {
                         String src = extractAttribute(tag, "src");
-                        element.setContent(src);
+                        if (src.startsWith("http")) {
+                            element.setContent(src);
+                        } else {
+                            element.setContent(getBaseUrl(url) + src);
+                        }
                     } else if (tagName.equals("a")) {
                         String href = extractAttribute(tag, "href");
                         element.setContent(href);
@@ -57,6 +61,19 @@ public class HtmlParser {
         }
 
         return root;
+    }
+    private String getBaseUrl(URL url) {
+        String protocol = url.getProtocol(); // http или https
+        String host = url.getHost(); // example.com
+        int port = url.getPort(); // Порт, например 8080, или -1, если порт не указан
+
+        // Если порт указан и не является стандартным для протокола, добавляем его
+        if (port != -1 && port != 80 && port != 443) {
+            return protocol + "://" + host + ":" + port;
+        }
+
+        // Стандартный URL без порта
+        return protocol + "://" + host;
     }
 
     private static boolean isSelfClosingTag(String tagName) {

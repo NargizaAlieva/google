@@ -7,6 +7,7 @@ import java.util.List;
 public class CssRule {
     List<String> selectors; // Селекторы как список
     List<CssProperty> properties;
+    String media = null;
 
     public CssRule(List<String> selectors) {
         this.selectors = selectors;
@@ -15,6 +16,12 @@ public class CssRule {
 
     public void addProperty(String name, String value) {
         this.properties.add(new CssProperty(name, value));
+    }
+    public void setMedia(String media) {
+        this.media = media;
+    }
+    public String getMedia() {
+        return media;
     }
 
     public List<String> getSelector() {
@@ -38,6 +45,7 @@ public class CssRule {
     }
     public String toCssString() {
         StringBuilder css = new StringBuilder();
+        css.append("@media " + media);
         css.append(getFullSelector()).append(" {").append(System.lineSeparator());
         for (CssProperty property : properties) {
             css.append("    ").append(property.getName()).append(": ").append(property.getValue()).append(";")
