@@ -53,7 +53,7 @@ public class MergeCssomDom {
         setCssToChildren(rootRenderNode);
         setWidthHeightToChildren(rootRenderNode);
         hTagsInHeight(rootRenderNode);
-        finalCalculationOfWidth(rootRenderNode);
+
         finalCalculationOfHeight(rootRenderNode);
         setXY(rootRenderNode);
 
@@ -116,7 +116,7 @@ public class MergeCssomDom {
 
     private void finalCalculationOfHeight(RenderNode renderNode) {
          for (RenderNode child : renderNode.getChildren()){
-             calculateHeightOfChildren(child);
+             child.setHeight(calculateHeightOfChildren(child));
              finalCalculationOfHeight(child);
          }
     }
@@ -133,7 +133,7 @@ public class MergeCssomDom {
         for (RenderNode child : children) {
             if ("img".equals(child.getTagName())) {
                 child.setHeight(getImageHeight(child));
-            } else if (child.getHeight() == -1) {
+            } else if (child.getHeight() < 5) {
                 child.setHeight(calculateHeightOfChildren(child));
             }
 
@@ -175,8 +175,7 @@ public class MergeCssomDom {
             }
             System.out.println("Sigma");
             if (img != null) {
-                System.out.println(img.getHeight());
-                imgNode.setWidth(img.getWidth());
+                imgNode.setHeight(img.getHeight() / (img.getWidth() / imgNode.getParent().getWidth()));
             }
             System.out.println("Sigma");
 
@@ -186,6 +185,7 @@ public class MergeCssomDom {
             return 0;
         }
     }
+
 
     private double getMaxHeight(ArrayList<Double> heights) {
         double maxHeight = 0;
@@ -209,8 +209,6 @@ public class MergeCssomDom {
 
     private void calculateHTags(RenderNode renderNode, String tagNameForSize) {
         int size = tagSize.get(tagNameForSize);
-        System.out.println("i Am here");
-        System.out.println(size);
         if (size != -1) {
             renderNode.setHeight(size);
             for (RenderNode child : renderNode.getChildren()) {
@@ -236,8 +234,8 @@ public class MergeCssomDom {
 
     private void setWidthHeightToChildren(RenderNode renderNode) {
         for (RenderNode child : renderNode.getChildren()) {
-            setWidthToChildren(renderNode, child);
             setHeightToChildren(child);
+            setWidthToChildren(renderNode, child);
             setWidthHeightToChildren(child);
         }
     }
@@ -291,14 +289,13 @@ public class MergeCssomDom {
 
         int textHeight = metrics.getHeight();
         int textWidth = metrics.stringWidth(textContent);
-        renderNode.setHeight(textHeight);
-        renderNode.setWidth(textWidth);
-        renderNode.getParent().setWidth(textWidth);
-        if (Objects.equals(renderNode.getParent().getTagName(), "div")){
+        if (!Objects.equals(renderNode.getParent().getTagName(), "div")){
             double parentWidth = renderNode.getWidth();
             renderNode.getParent().setWidth(textWidth + parentWidth);
             renderNode.getParent().setHeight(textHeight);
         }
+        renderNode.setHeight(textHeight);
+        renderNode.setWidth(textWidth);
     }
 
     private Integer getHeightFromParent(RenderNode renderNode, int devider) {
@@ -334,7 +331,14 @@ public class MergeCssomDom {
                 }
             }
         } else {
-            if (blockElements.contains(renderNode.getTagName())){
+            if (styles.get("max-width") != null && !styles.get("max-width").isEmpty()) {
+                double maxWidth = Double.parseDouble(styles.get("max-width").replace("px", "").replace("%", "").trim());
+                if (maxWidth < renderNode.getWidth()){
+                    child.setWidth(maxWidth);
+                } else {
+                    child.setWidth(renderNode.getWidth());
+                }
+            } else{
                 child.setWidth(renderNode.getWidth());
             }
         }
