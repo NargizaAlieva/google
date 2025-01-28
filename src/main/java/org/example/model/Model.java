@@ -12,6 +12,7 @@ import org.example.model.socket.HttpResponse;
 import org.example.model.socket.Socket;
 import org.example.view.Viewer;
 
+import java.net.URL;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +27,7 @@ public class Model {
 
     public Model(Viewer viewer) {
         this.viewer = viewer;
-        this.socket = new Socket();
+        socket = new Socket();
         htmlParser = new HtmlParser();
         cssParser = new CssParser();
         mergeCssomDom = new MergeCssomDom();
@@ -123,5 +124,9 @@ public class Model {
 
     public HttpResponse getHttpResponse() {
         return httpResponse;
+    }
+
+    public String getBaseUrl() {
+        return socket.getBaseUrl();
     }
 }

@@ -226,7 +226,6 @@ public class MergeCssomDom {
             RenderNode renderNode = new RenderNode(child.getTag());
             parentRenderNode.addChild(renderNode);
             renderNode.setTextContent(child.getContent());
-            renderNode.setStyles(child.getStyles());
             renderNode.setParent(parentRenderNode);
             createRenderTree(child, renderNode);
         }

@@ -1,5 +1,6 @@
 package org.example.view.renderers;
 
+import org.example.model.Model;
 import org.example.model.html.HtmlElement;
 import org.example.model.renderTree.RenderNode;
 import org.example.model.renderTree.RenderTree;
@@ -15,11 +16,13 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class Renderer {
+    private Model model;
     private Graphics2D g2d;
     private List<LinkArea> linkAreas;
     private RenderTree renderTree;
     private Map<String, Consumer<RenderNode>> renderers;
-    public Renderer() {
+    public Renderer(Model model) {
+        this.model = model;
         this.linkAreas = new ArrayList<>();
         createRenderers();
     }
@@ -137,17 +140,54 @@ public class Renderer {
         }
     }
 
+//    private Image renderImage(RenderNode node) {
+//        try {
+//            URL imgUrl = new URL(node.getTextContent());
+//            Image img = ImageIO.read(imgUrl);
+//            g2d.drawImage(img, node.getX(), node.getY(), null);
+//            return img;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
     private Image renderImage(RenderNode node) {
         try {
-            URL imgUrl = new URL(node.getTextContent());
+            String content = node.getTextContent();
+            URL imgUrl;
+
+            if (content.startsWith("http") || content.startsWith("https")) {
+                imgUrl = new URL(content);
+            } else {
+                imgUrl = new URL(model.getBaseUrl() + content);
+            }
+
             Image img = ImageIO.read(imgUrl);
-            g2d.drawImage(img, node.getX(), node.getY(), null);
+
+            int imgWidth = img.getWidth(null);
+            int imgHeight = img.getHeight(null);
+
+            if (imgWidth > node.getWidth() || imgHeight > node.getHeight()) {
+                double widthRatio = node.getWidth() / imgWidth;
+                double heightRatio = node.getHeight() / imgHeight;
+                double scale = Math.min(widthRatio, heightRatio);
+
+                int scaledWidth = (int) (imgWidth * scale);
+                int scaledHeight = (int) (imgHeight * scale);
+
+                g2d.drawImage(img, node.getX(), node.getY(), scaledWidth, scaledHeight, null);
+            } else {
+                g2d.drawImage(img, node.getX(), node.getY(), imgWidth, imgHeight, null);
+            }
+
             return img;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
 
     private void renderDefault(RenderNode node) {
         // renderText(element, "Serif", Font.PLAIN, 16, Color.BLACK, 20);

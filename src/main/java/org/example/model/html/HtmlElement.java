@@ -11,7 +11,6 @@ public class HtmlElement {
     private String[] ids;
     private HashMap<String, String> styles;
     private List<HtmlElement> children;
-    private HashMap<String, String> css;
 
     public HtmlElement(String tag, String content) {
         this.tag = tag;
@@ -20,15 +19,6 @@ public class HtmlElement {
         this.ids = new String[0];
         this.classes = new String[0];
         this.styles = new HashMap<>();
-        this.css = new HashMap<>();
-    }
-
-    public void setCssRule(String key, String value) {
-        this.css.put(key, value);
-    }
-
-    public HashMap<String, String> getCssRule() {
-        return css;
     }
 
     public void setStyles(String key, String value) {

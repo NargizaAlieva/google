@@ -149,9 +149,6 @@ public class CssParser {
 
     public void findCssOfHtml(HtmlElement htmlElement, List<String> selectors, CssRule cssRule) {
         if (selectors.isEmpty()) {
-            for (CssProperty cssProperty : cssRule.getProperties()) {
-                htmlElement.setCssRule(cssProperty.getName(), cssProperty.getValue());
-            }
             return;
         }
 
@@ -163,13 +160,6 @@ public class CssParser {
 
         if (Arrays.asList(htmlElement.getClasses()).contains(currentSelector) || htmlElement.getTag().equals(currentSelector)) {
             selectors = selectors.subList(1, selectors.size());
-
-            if (selectors.isEmpty()) {
-                for (CssProperty cssProperty : cssRule.getProperties()) {
-                    htmlElement.setCssRule(cssProperty.getName(), cssProperty.getValue());
-                }
-                return;
-            }
 
             for (HtmlElement child : htmlElement.getChildren()) {
                 findCssOfHtml(child, selectors, cssRule);

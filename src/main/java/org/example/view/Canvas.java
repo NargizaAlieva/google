@@ -25,7 +25,7 @@ public class Canvas extends JPanel {
     public Canvas(Model model) {
         this.model = model;
         cursor = new Cursor(getWidth() > 0 ? getWidth() : 1400);
-        renderer = new Renderer();
+        renderer = new Renderer(model);
         htmlRenderer = new HtmlRenderer(cursor);
         setBackground(Color.WHITE);
         linkAreas = new ArrayList<>();
@@ -45,7 +45,6 @@ public class Canvas extends JPanel {
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, getWidth(), getHeight());
         linkAreas.clear();
-        HtmlElement dom = model.parseHtml();
         renderer.renderElement(g2d, model.parse());
         //htmlRenderer.renderElement(g2d, dom);
         updateLinkAreas();
@@ -58,7 +57,7 @@ public class Canvas extends JPanel {
 
     private void updateLinkAreas() {
         linkAreas.clear();
-        linkAreas.addAll(htmlRenderer.getLinkAreas());
+        linkAreas.addAll(renderer.getLinkAreas());
     }
 
     public List<LinkArea> getLinkAreas() {

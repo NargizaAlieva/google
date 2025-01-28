@@ -15,10 +15,11 @@ import java.util.Map;
 public class Socket {
     private static final int TIMEOUT_MS = 5000;
     private static final int MAX_REDIRECTS = 5;
+    private URL url;
 
     public HttpResponse fetchHtmlWithCss(String urlString) {
         try {
-            URL url = new URL(urlString);
+            url = new URL(urlString);
             String host = url.getHost();
             int port = url.getProtocol().equalsIgnoreCase("https") ? 443 : 80;
             String path = url.getPath().isEmpty() ? "/" : url.getPath();
@@ -141,6 +142,15 @@ public class Socket {
             e.printStackTrace();
         }
         return cssResources;
+    }
+
+    public String getBaseUrl() {
+        try {
+            return url.getProtocol() + "://" + url.getHost();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private String fetchCss(String cssUrl) {
