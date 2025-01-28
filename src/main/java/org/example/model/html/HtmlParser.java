@@ -68,16 +68,14 @@ public class HtmlParser {
         return root;
     }
     private String getBaseUrl(URL url) {
-        String protocol = url.getProtocol(); // http или https
-        String host = url.getHost(); // example.com
-        int port = url.getPort(); // Порт, например 8080, или -1, если порт не указан
+        String protocol = url.getProtocol();
+        String host = url.getHost();
+        int port = url.getPort();
 
-        // Если порт указан и не является стандартным для протокола, добавляем его
         if (port != -1 && port != 80 && port != 443) {
             return protocol + "://" + host + ":" + port;
         }
 
-        // Стандартный URL без порта
         return protocol + "://" + host;
     }
 
@@ -91,7 +89,7 @@ public class HtmlParser {
         Matcher matcher = linkPattern.matcher(html);
 
         while (matcher.find()) {
-            links.add(matcher.group(1)); // Извлекаем ссылки из атрибута href
+            links.add(matcher.group(1));
         }
 
         return links;
@@ -106,6 +104,7 @@ public class HtmlParser {
         }
         return null;
     }
+
     private static String[] extractClasses(String tag) {
         String pattern = "class=\"([^\"]*)\"";
         Pattern classPattern = Pattern.compile(pattern);

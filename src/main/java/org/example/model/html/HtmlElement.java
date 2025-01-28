@@ -25,10 +25,6 @@ public class HtmlElement {
         this.styles.put(key, value);
     }
 
-    public HashMap<String, String> getStyles() {
-        return styles;
-    }
-
     public void addChild(HtmlElement child) {
         children.add(child);
     }

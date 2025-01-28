@@ -2,7 +2,6 @@ package org.example.model.renderTree;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class RenderNode {
     private String tagName;
@@ -19,8 +18,8 @@ public class RenderNode {
         this.appliedStyles = new HashMap<>();
         this.height = -1;
         this.width = -1;
-        this.x = -1;
-        this.y = -1;
+        this.x = 10;
+        this.y = 10;
     }
 
     public void addChild(RenderNode child) {
@@ -61,12 +60,6 @@ public class RenderNode {
         return textContent;
     }
 
-    public void setDimensions(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-    }
     public void setX(double x) {
         this.x = x;
     }

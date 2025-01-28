@@ -20,17 +20,20 @@ public class Renderer {
     private Graphics2D g2d;
     private List<LinkArea> linkAreas;
     private RenderTree renderTree;
+    private CssRenderer cssRenderer;
     private Map<String, Consumer<RenderNode>> renderers;
     public Renderer(Model model) {
         this.model = model;
         this.linkAreas = new ArrayList<>();
+        cssRenderer = new CssRenderer();
         createRenderers();
     }
 
-    public void renderElement(Graphics2D g2d, RenderTree renderTree) {
+    public int renderElement(Graphics2D g2d, RenderTree renderTree) {
         this.g2d = g2d;
         this.renderTree = renderTree;
         renderElement(renderTree.getRoot(), renderTree.getRoot().getTagName());
+        return renderTree.getWindowHeight();
     }
 
     private void renderElement(RenderNode node, String parentTag) {
@@ -39,11 +42,12 @@ public class Renderer {
         System.out.println(tagToUse);
         renderers.getOrDefault(tagToUse, this::renderDefault).accept(node);
 
-        if (node.getTextContent().isEmpty() && !node.getChildren().isEmpty() && !node.getTagName().equals("ul")) {
+        if (node.getTextContent() != null && node.getTextContent().isEmpty() && !node.getChildren().isEmpty() && !node.getTagName().equals("ul")) {
             for (RenderNode child : node.getChildren()) {
                 renderElement(child, node.getTagName());
             }
         }
+        renderTree.setWindowHeight((int) (node.getY() + node.getHeight()));
     }
 
     private void createRenderers() {
@@ -66,27 +70,16 @@ public class Renderer {
         int width = (int) node.getWidth();
         int height = (int) node.getHeight();
 
-        g2d.drawRect(node.getX(), node.getY(), width, height);
+        g2d.drawRect(node.getX(), node.getY() - g2d.getFontMetrics().getHeight(), width, height);
     }
 
     private void renderText(RenderNode node) {
-        FontMetrics fm = g2d.getFontMetrics();
+        g2d.setColor(Color.black);
         String content = node.getTextContent();
 
-        StringBuilder lineBuilder = new StringBuilder();
-        for (char c : content.toCharArray()) {
-            lineBuilder.append(c);
-            int lineWidth = fm.stringWidth(lineBuilder.toString());
+        if (!content.isEmpty()) {
 
-            if (node.getX() + lineWidth > renderTree.getWindowWidth()) {
-                g2d.drawString(lineBuilder.toString(), node.getX(), node.getY());
-                lineBuilder.setLength(0);
-                lineBuilder.append(c);
-            }
-        }
-
-        if (!lineBuilder.isEmpty()) {
-            g2d.drawString(lineBuilder.toString().trim(), node.getX(), node.getY());
+            g2d.drawString(content, node.getX(), node.getY());
         }
     }
 
@@ -170,8 +163,7 @@ public class Renderer {
 
             if (imgWidth > node.getWidth() || imgHeight > node.getHeight()) {
                 double widthRatio = node.getWidth() / imgWidth;
-                double heightRatio = node.getHeight() / imgHeight;
-                double scale = Math.min(widthRatio, heightRatio);
+                double scale = widthRatio;
 
                 int scaledWidth = (int) (imgWidth * scale);
                 int scaledHeight = (int) (imgHeight * scale);
@@ -195,5 +187,11 @@ public class Renderer {
 
     public List<LinkArea> getLinkAreas() {
         return linkAreas;
+    }
+
+    public int getCanvasHeight() {
+        if (renderTree != null)
+            return renderTree.getWindowHeight();
+        return 0;
     }
 }

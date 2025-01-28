@@ -1,6 +1,5 @@
 package org.example.model.css;
 
-import org.example.model.css.cssom.CssProperty;
 import org.example.model.css.cssom.CssRule;
 import org.example.model.css.cssom.CssTree;
 import org.example.model.html.HtmlElement;
@@ -38,28 +37,25 @@ public class CssParser {
 
             if (currentChar == '@') {
                 isAt = true;
-                whereStartAt = i; // Запоминаем начало блока @
+                whereStartAt = i;
             }
 
             if (currentChar == '{') {
                 if (isAt) {
                     media = content.substring(whereStartAt, i).trim();
-                    isAt = false; // Сбрасываем флаг после обработки
+                    isAt = false;
                 }
-                stack.push('{'); // Открывающая скобка
+                stack.push('{');
             } else if (currentChar == '}') {
                 if (!stack.isEmpty() && stack.peek() == '{') {
-                    stack.pop(); // Закрывающая скобка
+                    stack.pop();
                 }
                 if (stack.isEmpty() && !media.isEmpty()) {
-                    // Добавляем в mediaBlocks только блоки с @
                     String block = content.substring(whereStartAt, i + 1).trim();
                     mediaBlocks.add(block);
 
-                    // Удаляем этот блок из content
                     content = content.substring(0, whereStartAt) + content.substring(i + 1);
 
-                    // Сбрасываем индекс для обработки оставшейся строки
                     i = whereStartAt - 1;
                     media = "";
                 }
@@ -73,21 +69,16 @@ public class CssParser {
     }
     private void setMediaCss(ArrayList<String> mediaBlocks) {
         for (String mediaBlock : mediaBlocks) {
-            // Переменная для хранения @media
             String media = "";
 
-            // Используем регулярное выражение для извлечения блока @media
-            Pattern mediaPattern = Pattern.compile("@[^{]+\\{"); // Ищем @media {...}
+            Pattern mediaPattern = Pattern.compile("@[^{]+\\{");
             Matcher mediaMatcher = mediaPattern.matcher(mediaBlock);
             if (mediaMatcher.find()) {
-                // Извлекаем заголовок @media
                 media = mediaMatcher.group().trim();
             }
 
-            // Убираем заголовок @media из блока, оставляя только внутренние элементы
             String innerContent = mediaBlock.substring(media.length(), mediaBlock.length() - 1).trim();
 
-            // Разделяем внутренние элементы на блоки, например boy {...}, .container b {...}
             ArrayList<String> cssBlocks = new ArrayList<>();
             Pattern blockPattern = Pattern.compile("[^{}]+\\{[^}]*\\}");
             Matcher blockMatcher = blockPattern.matcher(innerContent);
@@ -95,10 +86,8 @@ public class CssParser {
                 cssBlocks.add(blockMatcher.group().trim());
             }
 
-            // Преобразуем ArrayList<String> в String[]
             String[] cssBlocksArray = cssBlocks.toArray(new String[0]);
 
-            // Передаём массив в другой метод
             setUsualCss(cssBlocksArray, media);
         }
     }
@@ -145,7 +134,6 @@ public class CssParser {
             cssTree.addRule(rule);
         }
     }
-
 
     public void findCssOfHtml(HtmlElement htmlElement, List<String> selectors, CssRule cssRule) {
         if (selectors.isEmpty()) {

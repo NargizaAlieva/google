@@ -5,7 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +42,6 @@ public class Socket {
                             throw new IOException("Redirect location missing");
                         }
 
-                        // Обработка относительных и абсолютных URL
                         url = new URL(url, location);
                         host = url.getHost();
                         path = url.getPath().isEmpty() ? "/" : url.getPath();
@@ -83,7 +82,6 @@ public class Socket {
             throw new IOException("Invalid HTTP response: " + statusLine);
         }
 
-        // Извлечение кода состояния и сообщения
         String[] statusParts = statusLine.split(" ", 3);
         if (statusParts.length < 3 || !statusParts[1].matches("\\d+")) {
             throw new IOException("Malformed status line: " + statusLine);
@@ -91,7 +89,6 @@ public class Socket {
         int statusCode = Integer.parseInt(statusParts[1]);
         String statusMessage = statusParts[2];
 
-        // Парсинг заголовков
         Map<String, String> headers = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null && !line.isEmpty()) {
@@ -105,7 +102,6 @@ public class Socket {
             }
         }
 
-        // Чтение HTML тела
         StringBuilder body = new StringBuilder();
         while ((line = reader.readLine()) != null) {
             body.append(line).append("\n");
@@ -134,7 +130,7 @@ public class Socket {
 
                     String cssContent = fetchCss(cssUrl);
                     if (cssContent != null) {
-                        cssResources.add(new CssResource(cssUrl, cssContent));
+                        cssResources.add(new CssResource(cssContent));
                     }
                 }
             }

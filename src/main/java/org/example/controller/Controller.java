@@ -5,8 +5,8 @@ import org.example.controller.commands.SearchCommand;
 import org.example.model.Model;
 import org.example.view.Canvas;
 import org.example.view.Viewer;
-import org.example.view.renderers.HtmlRenderer;
 import org.example.view.renderers.LinkArea;
+import org.example.view.renderers.Renderer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 public class Controller implements ActionListener {
     private final Model model;
     private final Viewer viewer;
-    private HtmlRenderer htmlRenderer;
+    private Renderer renderer;
     private HashMap<String, Command> commandMap;
 
     public Controller(Viewer viewer) {
@@ -28,7 +28,7 @@ public class Controller implements ActionListener {
     }
 
     public void attachCanvasMouseEvents(Canvas canvas) {
-        this.htmlRenderer = canvas.getHtmlRenderer();
+        renderer = canvas.getRenderer();
         canvas.addMouseListener(new CanvasMouseListener(this));
         canvas.addMouseMotionListener(new LinkHoverHandler(this));
     }
@@ -46,14 +46,14 @@ public class Controller implements ActionListener {
     }
 
     void handleMouseClick(MouseEvent e) {
-        if (htmlRenderer == null) {
+        if (renderer == null) {
             return;
         }
 
         int x = e.getX();
         int y = e.getY();
 
-        for (LinkArea linkArea : htmlRenderer.getLinkAreas()) {
+        for (LinkArea linkArea : renderer.getLinkAreas()) {
             if (linkArea.contains(x, y)) {
                 linkArea.openUrlInBrowser();
                 break;
@@ -62,13 +62,13 @@ public class Controller implements ActionListener {
     }
 
     public void clearLinkAreas() {
-        if (htmlRenderer != null) {
-            htmlRenderer.getLinkAreas().clear();
+        if (renderer != null) {
+            renderer.getLinkAreas().clear();
         }
     }
 
     private boolean isCursorOverLink(int x, int y) {
-        for (LinkArea linkArea : htmlRenderer.getLinkAreas()) {
+        for (LinkArea linkArea : renderer.getLinkAreas()) {
             if (linkArea.contains(x, y)) {
                 return true;
             }

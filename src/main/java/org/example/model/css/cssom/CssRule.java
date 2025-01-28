@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CssRule {
-    List<String> selectors; // Селекторы как список
+    List<String> selectors;
     List<CssProperty> properties;
     String media = null;
 
@@ -17,19 +17,17 @@ public class CssRule {
     public void addProperty(String name, String value) {
         this.properties.add(new CssProperty(name, value));
     }
+
     public void setMedia(String media) {
         this.media = media;
     }
+
     public String getMedia() {
         return media;
     }
 
     public List<String> getSelector() {
         return selectors;
-    }
-
-    public List<CssProperty> getProperties() {
-        return properties;
     }
 
     public HashMap<String, String> getPropertiesMap() {
@@ -41,8 +39,9 @@ public class CssRule {
     }
 
     public String getFullSelector() {
-        return String.join(" ", selectors); // Собрать обратно в строку
+        return String.join(" ", selectors);
     }
+
     public String toCssString() {
         StringBuilder css = new StringBuilder();
         css.append("@media " + media);

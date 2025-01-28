@@ -2,7 +2,6 @@ package org.example.view;
 
 import org.example.utils.Cursor;
 import org.example.model.Model;
-import org.example.model.html.HtmlElement;
 import org.example.view.renderers.HtmlRenderer;
 import org.example.view.renderers.LinkArea;
 import org.example.view.renderers.Renderer;
@@ -25,42 +24,41 @@ public class Canvas extends JPanel {
     public Canvas(Model model) {
         this.model = model;
         cursor = new Cursor(getWidth() > 0 ? getWidth() : 1400);
-        renderer = new Renderer(model);
         htmlRenderer = new HtmlRenderer(cursor);
-        setBackground(Color.WHITE);
+
+        renderer = new Renderer(model);
         linkAreas = new ArrayList<>();
     }
 
     @Override
     public Dimension getPreferredSize() {
         int width = getWidth() > 0 ? getWidth() : 1400;
-        int height = Math.max(cursor.getY() + 50, getHeight());
+        int height = Math.max(renderer.getCanvasHeight() + 50, getHeight());
         return new Dimension(width, height);
     }
 
     @Override
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        cursor.resetCursor(getWidth());
+
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, getWidth(), getHeight());
         linkAreas.clear();
+
         renderer.renderElement(g2d, model.parse());
         //htmlRenderer.renderElement(g2d, dom);
         updateLinkAreas();
+
         revalidate();
+        repaint();
     }
 
-    public HtmlRenderer getHtmlRenderer() {
-        return htmlRenderer;
+    public Renderer getRenderer() {
+        return renderer;
     }
 
     private void updateLinkAreas() {
         linkAreas.clear();
         linkAreas.addAll(renderer.getLinkAreas());
-    }
-
-    public List<LinkArea> getLinkAreas() {
-        return linkAreas;
     }
 }
