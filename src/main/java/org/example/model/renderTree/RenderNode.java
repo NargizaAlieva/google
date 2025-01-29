@@ -21,6 +21,9 @@ public class RenderNode {
         this.x = 10;
         this.y = 10;
     }
+    public void setHeight(double height) {
+        this.height = height;
+    }
 
     public void addChild(RenderNode child) {
         this.children.add(child);
@@ -68,9 +71,6 @@ public class RenderNode {
     }
     public void setWidth(double width) {
         this.width = width;
-    }
-    public void setHeight(double height) {
-        this.height = height;
     }
 
     public int getX() {

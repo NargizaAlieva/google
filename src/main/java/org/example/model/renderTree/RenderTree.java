@@ -2,8 +2,8 @@ package org.example.model.renderTree;
 
 public class RenderTree {
     private RenderNode root;
-    private int windowWidth = 2000;
-    private int windowHeight = 1000;
+    private int windowWidth = 1440;
+    private int windowHeight = 900;
 
     public RenderTree() {
     }
