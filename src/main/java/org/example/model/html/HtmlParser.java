@@ -1,6 +1,5 @@
 package org.example.model.html;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
