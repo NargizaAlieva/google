@@ -49,9 +49,8 @@ public class HtmlElement {
         return ids;
     }
 
-    public HtmlElement setIds(String[] ids) {
+    public void setIds(String[] ids) {
         this.ids = ids;
-        return this;
     }
 
     public List<HtmlElement> getChildren() {

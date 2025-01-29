@@ -44,7 +44,7 @@ public class CssRule {
 
     public String toCssString() {
         StringBuilder css = new StringBuilder();
-        css.append("@media " + media);
+        css.append("@media ").append(media);
         css.append(getFullSelector()).append(" {").append(System.lineSeparator());
         for (CssProperty property : properties) {
             css.append("    ").append(property.getName()).append(": ").append(property.getValue()).append(";")

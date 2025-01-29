@@ -35,13 +35,6 @@ public class MergeCssomDom {
         put("h5", 13);
         put("h6", 10);
     }};
-    private final Set<String> blockElements = Set.of(
-            "div", "section", "article", "aside", "header", "footer", "main", "nav",
-            "p", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "blockquote",
-            "ul", "ol", "li", "dl", "dt", "dd",
-            "figure", "figcaption", "hr", "table", "caption", "thead", "tbody", "tfoot", "tr", "th", "td",
-            "form", "fieldset", "legend", "textarea", "address", "details", "summary"
-    );
 
     public RenderTree mergeCssomDom(HtmlElement htmlElement, CssTree cssTree) {
         renderTree = new RenderTree();
@@ -65,23 +58,6 @@ public class MergeCssomDom {
         renderTree.setRoot(rootRenderNode);
 
         return renderTree;
-    }
-    private void finalCalculationOfWidth(RenderNode rootRenderNode) {
-        double currentWidth = 0;
-        if (!blockElements.contains(rootRenderNode.getTagName())){
-            for (RenderNode child : rootRenderNode.getChildren()) {
-                if (child.getWidth() < 0){
-                    finalCalculationOfWidth(child);
-                }
-                currentWidth += child.getWidth();
-            }
-            rootRenderNode.setWidth(currentWidth);
-        }
-        if (!rootRenderNode.getChildren().isEmpty()){
-            for (RenderNode child : rootRenderNode.getChildren()) {
-                finalCalculationOfWidth(child);
-            }
-        }
     }
 
     private void setXY(RenderNode renderNode) {
@@ -218,7 +194,7 @@ public class MergeCssomDom {
             for (RenderNode child : renderNode.getChildren()) {
                 calculateHTags(child, tagNameForSize);
             }
-        };
+        }
     }
 
 
@@ -328,11 +304,7 @@ public class MergeCssomDom {
         } else {
             if (styles.get("max-width") != null && !styles.get("max-width").isEmpty()) {
                 double maxWidth = Double.parseDouble(styles.get("max-width").replace("px", "").replace("%", "").trim());
-                if (maxWidth < renderNode.getWidth()){
-                    child.setWidth(maxWidth);
-                } else {
-                    child.setWidth(renderNode.getWidth());
-                }
+                child.setWidth(Math.min(maxWidth, renderNode.getWidth()));
             } else{
                 child.setWidth(renderNode.getWidth());
             }
