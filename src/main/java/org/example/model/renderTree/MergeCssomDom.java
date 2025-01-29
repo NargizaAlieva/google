@@ -67,31 +67,55 @@ public class MergeCssomDom {
         double rowHeight = 0;
 
         for (RenderNode child : renderNode.getChildren()) {
-            if (parentRemainWidth >= child.getWidth()) {
-                child.setX(lastX);
-                child.setY(lastY);
+            HashMap<String, String> styles = child.getAppliedStyles();
 
-                lastX += child.getWidth();
-                parentRemainWidth -= child.getWidth();
+            // Получаем margin и padding для всех сторон
+            double marginTop = parseStyleValue(styles.getOrDefault("margin-top", "0px"), parentRemainWidth);
+            double marginBottom = parseStyleValue(styles.getOrDefault("margin-bottom", "0px"), parentRemainWidth);
+            double marginLeft = parseStyleValue(styles.getOrDefault("margin-left", "0px"), parentRemainWidth);
+            double marginRight = parseStyleValue(styles.getOrDefault("margin-right", "0px"), parentRemainWidth);
+            double paddingTop = parseStyleValue(styles.getOrDefault("padding-top", "0px"), parentRemainWidth);
+            double paddingBottom = parseStyleValue(styles.getOrDefault("padding-bottom", "0px"), parentRemainWidth);
+            double paddingLeft = parseStyleValue(styles.getOrDefault("padding-left", "0px"), parentRemainWidth);
+            double paddingRight = parseStyleValue(styles.getOrDefault("padding-right", "0px"), parentRemainWidth);
 
-                rowHeight = Math.max(rowHeight, child.getHeight());
+            if (parentRemainWidth >= child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight) {
+                child.setX(lastX + marginLeft + paddingLeft); // Учитываем margin-left и padding-left
+                child.setY(lastY + marginTop + paddingTop);
+
+                lastX += child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight; // Обновляем lastX с учетом отступов
+                parentRemainWidth -= child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight;
+
+                rowHeight = Math.max(rowHeight, child.getHeight() + marginTop + marginBottom + paddingTop + paddingBottom);
             } else {
                 lastX = renderNode.getX();
                 lastY += rowHeight;
+
                 parentRemainWidth = renderNode.getWidth();
 
-                child.setX(lastX);
-                child.setY(lastY);
+                child.setX(lastX + marginLeft + paddingLeft);
+                child.setY(lastY + marginTop + paddingTop);
 
-                lastX += child.getWidth();
-                parentRemainWidth -= child.getWidth();
+                lastX += child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight;
+                parentRemainWidth -= child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight;
 
-                rowHeight = child.getHeight();
+                rowHeight = child.getHeight() + marginTop + marginBottom + paddingTop + paddingBottom;
             }
 
             setXY(child);
         }
     }
+
+    private double parseStyleValue(String value, double parentDimension) {
+        if (value.endsWith("px")) {
+            return Double.parseDouble(value.replace("px", ""));
+        } else if (value.endsWith("%")) {
+            return Double.parseDouble(value.replace("%", "")) / 100 * parentDimension;
+        } else {
+            return 0;
+        }
+    }
+
 
 
     private void finalCalculationOfHeight(RenderNode renderNode) {
@@ -111,8 +135,13 @@ public class MergeCssomDom {
         }
 
         for (RenderNode child : children) {
-            if ("img".equals(child.getTagName())) {
-                child.setHeight(getImageHeight(child));
+            if (child.getTagName().equals("img")) {
+                double imgHeight = getImageHeight(child);
+                child.setHeight(imgHeight);
+                System.out.println(child.getHeight());
+                System.out.println(imgHeight);
+                System.out.println(child.getTagName());
+                System.out.println(child.getChildren());
             } else if (child.getHeight() < 5) {
                 child.setHeight(calculateHeightOfChildren(child));
             }
@@ -137,11 +166,11 @@ public class MergeCssomDom {
         return height;
     }
 
-    private int getImageHeight(RenderNode imgNode) {
+    private double getImageHeight(RenderNode imgNode) {
         String imagePath = imgNode.getTextContent();
 
         if (imagePath == null || imagePath.isEmpty()) {
-            return 0;
+            return 222;
         }
 
         try {
@@ -153,17 +182,15 @@ public class MergeCssomDom {
             } else {
                 img = ImageIO.read(new File(imagePath));
             }
-            System.out.println("Sigma");
-            if (img != null) {
-                imgNode.setHeight(img.getHeight() / (img.getWidth() / imgNode.getParent().getWidth()));
-            }
-            System.out.println("Sigma");
 
-            return img != null ? img.getHeight() : 0;
+            if (img != null) {
+                return img.getHeight() / (img.getWidth() / imgNode.getParent().getWidth());
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
-            return 0;
         }
+        return 222;
     }
 
 
@@ -261,6 +288,10 @@ public class MergeCssomDom {
         int textHeight = metrics.getHeight();
         int textWidth = metrics.stringWidth(textContent);
         if (!Objects.equals(renderNode.getParent().getTagName(), "div")){
+            double parentWidth = renderNode.getWidth();
+            renderNode.getParent().setWidth(textWidth + parentWidth);
+            renderNode.getParent().setHeight(textHeight);
+        } else {
             double parentWidth = renderNode.getWidth();
             renderNode.getParent().setWidth(textWidth + parentWidth);
             renderNode.getParent().setHeight(textHeight);
@@ -398,22 +429,22 @@ public class MergeCssomDom {
 
                 switch (key) {
                     case "max-width":
-                        if (width > cssValue) {
+                        if (width >= cssValue) {
                             return false;
                         }
                         break;
                     case "min-width":
-                        if (width < cssValue) {
+                        if (width <= cssValue) {
                             return false;
                         }
                         break;
                     case "max-height":
-                        if (height > cssValue) {
+                        if (height >= cssValue) {
                             return false;
                         }
                         break;
                     case "min-height":
-                        if (height < cssValue) {
+                        if (height <= cssValue) {
                             return false;
                         }
                         break;
