@@ -5,12 +5,10 @@ import org.example.model.css.cssom.CssTree;
 import org.example.model.html.HtmlElement;
 
 import javax.imageio.ImageIO;
-
 import java.awt.Font;
+import java.awt.image.BufferedImage;
 import java.awt.Canvas;
 import java.awt.FontMetrics;
-import java.awt.image.BufferedImage;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -35,6 +33,29 @@ public class MergeCssomDom {
         put("h5", 13);
         put("h6", 10);
     }};
+    private final Set<String> blockElements = Set.of(
+            "div", "section", "article", "aside", "header", "footer", "main", "nav",
+            "p", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "blockquote",
+            "ul", "ol", "li", "dl", "dt", "dd",
+            "figure", "figcaption", "hr", "table", "caption", "thead", "tbody", "tfoot", "tr", "th", "td",
+            "form", "fieldset", "legend", "textarea", "address", "details", "summary"
+    );
+    Set<String> inheritableStyles = new HashSet<>(Arrays.asList(
+            "color",
+            "cursor",
+            "direction",
+            "visibility",
+            "quotes",
+            "letter-spacing",
+            "word-spacing",
+            "line-height",
+            "font",
+            "font-family",
+            "font-size",
+            "font-style",
+            "font-variant",
+            "font-weight"
+    ));
 
     public RenderTree mergeCssomDom(HtmlElement htmlElement, CssTree cssTree) {
         renderTree = new RenderTree();
@@ -58,6 +79,23 @@ public class MergeCssomDom {
         renderTree.setRoot(rootRenderNode);
 
         return renderTree;
+    }
+    private void finalCalculationOfWidth(RenderNode rootRenderNode) {
+        double currentWidth = 0;
+        if (!blockElements.contains(rootRenderNode.getTagName())){
+            for (RenderNode child : rootRenderNode.getChildren()) {
+                if (child.getWidth() < 0){
+                    finalCalculationOfWidth(child);
+                }
+                currentWidth += child.getWidth();
+            }
+            rootRenderNode.setWidth(currentWidth);
+        }
+        if (!rootRenderNode.getChildren().isEmpty()){
+            for (RenderNode child : rootRenderNode.getChildren()) {
+                finalCalculationOfWidth(child);
+            }
+        }
     }
 
     private void setXY(RenderNode renderNode) {
@@ -117,12 +155,11 @@ public class MergeCssomDom {
     }
 
 
-
     private void finalCalculationOfHeight(RenderNode renderNode) {
-         for (RenderNode child : renderNode.getChildren()){
-             child.setHeight(calculateHeightOfChildren(child));
-             finalCalculationOfHeight(child);
-         }
+        for (RenderNode child : renderNode.getChildren()){
+            child.setHeight(calculateHeightOfChildren(child));
+            finalCalculationOfHeight(child);
+        }
     }
     private double calculateHeightOfChildren(RenderNode renderNode) {
         double height = 0;
@@ -130,19 +167,14 @@ public class MergeCssomDom {
         ArrayList<Double> rowHeights = new ArrayList<>();
         ArrayList<RenderNode> children = renderNode.getChildren();
 
-        if (children == null) {
-            return height;
+        if ("img".equals(renderNode.getTagName())) {
+            return getImageHeight(renderNode);
         }
-
+        if (children == null) {
+            return renderNode.getHeight();
+        }
         for (RenderNode child : children) {
-            if (child.getTagName().equals("img")) {
-                double imgHeight = getImageHeight(child);
-                child.setHeight(imgHeight);
-                System.out.println(child.getHeight());
-                System.out.println(imgHeight);
-                System.out.println(child.getTagName());
-                System.out.println(child.getChildren());
-            } else if (child.getHeight() < 5) {
+            if (child.getHeight() < 5) {
                 child.setHeight(calculateHeightOfChildren(child));
             }
 
@@ -170,7 +202,7 @@ public class MergeCssomDom {
         String imagePath = imgNode.getTextContent();
 
         if (imagePath == null || imagePath.isEmpty()) {
-            return 222;
+            return 0;
         }
 
         try {
@@ -182,15 +214,17 @@ public class MergeCssomDom {
             } else {
                 img = ImageIO.read(new File(imagePath));
             }
-
+            System.out.println("Sigma");
             if (img != null) {
                 return img.getHeight() / (img.getWidth() / imgNode.getParent().getWidth());
             }
+            System.out.println("Sigma");
 
+            return 0;
         } catch (IOException e) {
             e.printStackTrace();
+            return 0;
         }
-        return 222;
     }
 
 
@@ -221,7 +255,7 @@ public class MergeCssomDom {
             for (RenderNode child : renderNode.getChildren()) {
                 calculateHTags(child, tagNameForSize);
             }
-        }
+        };
     }
 
 
@@ -231,6 +265,7 @@ public class MergeCssomDom {
             RenderNode renderNode = new RenderNode(child.getTag());
             parentRenderNode.addChild(renderNode);
             renderNode.setTextContent(child.getContent());
+            renderNode.setStyles(child.getStyles());
             renderNode.setParent(parentRenderNode);
             createRenderTree(child, renderNode);
         }
@@ -264,16 +299,24 @@ public class MergeCssomDom {
     }
 
     private void setHeightOfText(RenderNode renderNode) {
+        // Получаем текст из узла
         String textContent = renderNode.getTextContent();
         if (textContent == null || textContent.isEmpty()) {
             return;
         }
 
+        // Получаем имя тега
+        String tagName = renderNode.getTagName();
+
+        // Устанавливаем шрифт и размер по умолчанию
         String fontName = renderNode.getAppliedStyles().getOrDefault("font-family", "Arial");
         int fontSize;
 
+        // Используем размер шрифта из стилей или значение по умолчанию
         fontSize = Integer.parseInt(renderNode.getAppliedStyles().getOrDefault("font-size", "12").replace("px", "").trim());
 
+
+        // Устанавливаем стиль шрифта (по умолчанию - обычный)
         int fontStyle = Font.PLAIN;
         String fontWeight = renderNode.getAppliedStyles().getOrDefault("font-weight", "normal");
         if (fontWeight.equalsIgnoreCase("bold")) {
@@ -288,10 +331,6 @@ public class MergeCssomDom {
         int textHeight = metrics.getHeight();
         int textWidth = metrics.stringWidth(textContent);
         if (!Objects.equals(renderNode.getParent().getTagName(), "div")){
-            double parentWidth = renderNode.getWidth();
-            renderNode.getParent().setWidth(textWidth + parentWidth);
-            renderNode.getParent().setHeight(textHeight);
-        } else {
             double parentWidth = renderNode.getWidth();
             renderNode.getParent().setWidth(textWidth + parentWidth);
             renderNode.getParent().setHeight(textHeight);
@@ -324,7 +363,7 @@ public class MergeCssomDom {
         HashMap<String, String> styles = child.getAppliedStyles();
 
         if (styles.get("width") != null && !styles.get("width").isEmpty()) {
-             if (styles.get("width") != null && !styles.get("width").isEmpty()) {
+            if (styles.get("width") != null && !styles.get("width").isEmpty()) {
                 if (styles.get("width").contains("px")) {
                     child.setWidth(Double.parseDouble(styles.get("width").replace("px", "").trim()));
                 } else if (styles.get("width").contains("%")) {
@@ -335,7 +374,11 @@ public class MergeCssomDom {
         } else {
             if (styles.get("max-width") != null && !styles.get("max-width").isEmpty()) {
                 double maxWidth = Double.parseDouble(styles.get("max-width").replace("px", "").replace("%", "").trim());
-                child.setWidth(Math.min(maxWidth, renderNode.getWidth()));
+                if (maxWidth < renderNode.getWidth()){
+                    child.setWidth(maxWidth);
+                } else {
+                    child.setWidth(renderNode.getWidth());
+                }
             } else{
                 child.setWidth(renderNode.getWidth());
             }
@@ -401,11 +444,13 @@ public class MergeCssomDom {
         int height = renderTree.getWindowHeight();
         int width = renderTree.getWindowWidth();
 
+        // Разделяем медиа-запросы на отдельные условия
         String[] conditions = media.split("and");
 
         for (String condition : conditions) {
             condition = condition.trim();
 
+            // Извлекаем ключ-значение из каждого условия
             Pattern pattern = Pattern.compile("\\(([^)]*)\\)");
             Matcher matcher = pattern.matcher(condition);
 
@@ -414,6 +459,7 @@ public class MergeCssomDom {
                 String[] listOfKeyValue = keyValue.split(":", 2);
 
                 if (listOfKeyValue.length != 2) {
+                    // Если условие некорректное, возвращаем false
                     return false;
                 }
 
@@ -424,27 +470,28 @@ public class MergeCssomDom {
                 try {
                     cssValue = Integer.parseInt(value.replace("px", "").replace("%", "").trim());
                 } catch (NumberFormatException e) {
+                    // Пропускаем некорректные значения
                     return false;
                 }
 
                 switch (key) {
                     case "max-width":
-                        if (width >= cssValue) {
+                        if (width > cssValue) {
                             return false;
                         }
                         break;
                     case "min-width":
-                        if (width <= cssValue) {
+                        if (width < cssValue) {
                             return false;
                         }
                         break;
                     case "max-height":
-                        if (height >= cssValue) {
+                        if (height > cssValue) {
                             return false;
                         }
                         break;
                     case "min-height":
-                        if (height <= cssValue) {
+                        if (height < cssValue) {
                             return false;
                         }
                         break;
@@ -455,13 +502,16 @@ public class MergeCssomDom {
                         }
                         break;
                     default:
+                        // Неизвестное условие
                         return false;
                 }
             } else {
+                // Если условие не подходит под шаблон
                 return false;
             }
         }
 
+        // Если все условия выполнены
         return true;
     }
 
@@ -469,7 +519,7 @@ public class MergeCssomDom {
         for (RenderNode child : renderNode.getChildren()) {
             HashMap<String, String> parentStyles = renderNode.getAppliedStyles();
             for (Map.Entry<String, String> entry : parentStyles.entrySet()) {
-                if (entry.getKey().equals("height") || entry.getKey().equals("width") || entry.getKey().equals("padding") || entry.getKey().equals("border") || entry.getKey().equals("margin")) {
+                if (!inheritableStyles.contains(entry.getKey())) {
                     continue;
                 }
                 child.getAppliedStyles().putIfAbsent(entry.getKey(), entry.getValue());
@@ -482,6 +532,7 @@ public class MergeCssomDom {
         HashMap<String, String> styles = new HashMap<>(cssRule.getPropertiesMap());
 
         Set<String> allowedStyles = Set.of(
+                // Размеры и отступы
                 "width", "height", "min-width", "max-width", "min-height", "max-height",
                 "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
                 "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
@@ -490,34 +541,42 @@ public class MergeCssomDom {
                 "border-radius",
                 "outline", "outline-width", "outline-color", "outline-style",
 
+                // Цвета и фон
                 "color", "background", "background-color", "background-image",
                 "background-size", "background-position", "background-repeat",
 
+                // Шрифты и текст
                 "font-size", "font-family", "font-weight", "font-style", "font-variant",
                 "line-height", "letter-spacing", "word-spacing",
                 "text-align", "text-indent", "text-decoration", "text-transform",
                 "white-space", "vertical-align",
 
+                // Расположение и отображение
                 "display", "visibility", "z-index", "position",
                 "top", "right", "bottom", "left", "overflow",
                 "overflow-x", "overflow-y", "float", "clear",
 
+                // Тени и градиенты
                 "box-shadow", "text-shadow",
 
+                // Переходы и анимации
                 "transition", "transition-property", "transition-duration",
                 "transition-timing-function", "transition-delay",
                 "animation", "animation-name", "animation-duration",
                 "animation-timing-function", "animation-delay",
                 "animation-iteration-count", "animation-direction",
 
+                // Flexbox
                 "flex", "flex-grow", "flex-shrink", "flex-basis",
                 "justify-content", "align-items", "align-self",
                 "align-content", "order",
 
+                // Grid
                 "grid-template-rows", "grid-template-columns", "grid-template-areas",
                 "grid-gap", "grid-row", "grid-column", "grid-area",
                 "justify-items", "justify-self", "place-items",
 
+                // Другие свойства
                 "cursor", "clip", "opacity", "content", "quotes"
         );
 

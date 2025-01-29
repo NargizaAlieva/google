@@ -20,7 +20,9 @@ public class HtmlElement {
         this.classes = new String[0];
         this.styles = new HashMap<>();
     }
-
+    public HashMap<String, String> getStyles() {
+        return styles;
+    }
     public void setStyles(String key, String value) {
         this.styles.put(key, value);
     }
