@@ -40,8 +40,8 @@ public class Canvas extends JPanel {
         linkAreas.clear();
 
         renderer.renderElement(g2d, model.parse());
-        updateLinkAreas();
 
+        updateLinkAreas();
         revalidate();
     }
 
