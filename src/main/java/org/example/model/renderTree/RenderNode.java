@@ -16,8 +16,8 @@ public class RenderNode {
         this.textContent = "";
         this.children = new ArrayList<>();
         this.appliedStyles = new HashMap<>();
-        this.height = -1;
-        this.width = -1;
+        this.height = 0;
+        this.width = 0;
         this.x = 10;
         this.y = 10;
     }

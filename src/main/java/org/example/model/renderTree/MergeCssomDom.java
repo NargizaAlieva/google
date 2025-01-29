@@ -84,7 +84,7 @@ public class MergeCssomDom {
         double currentWidth = 0;
         if (!blockElements.contains(rootRenderNode.getTagName())){
             for (RenderNode child : rootRenderNode.getChildren()) {
-                if (child.getWidth() < 0){
+                if (child.getWidth() == 0){
                     finalCalculationOfWidth(child);
                 }
                 currentWidth += child.getWidth();
@@ -146,9 +146,9 @@ public class MergeCssomDom {
 
     private double parseStyleValue(String value, double parentDimension) {
         if (value.endsWith("px")) {
-            return Double.parseDouble(value.replace("px", ""));
+            return Math.max(Double.parseDouble(value.replace("px", "")), 0);
         } else if (value.endsWith("%")) {
-            return Double.parseDouble(value.replace("%", "")) / 100 * parentDimension;
+            return Math.max(Double.parseDouble(value.replace("%", "")) / 100 * parentDimension, 0);
         } else {
             return 0;
         }
@@ -205,6 +205,11 @@ public class MergeCssomDom {
             return 0;
         }
 
+        // Проверяем, является ли изображение SVG
+        if (imagePath.toLowerCase().endsWith(".svg")) {
+            return getSVGImageHeight(imagePath, imgNode);
+        }
+
         try {
             BufferedImage img;
 
@@ -214,11 +219,23 @@ public class MergeCssomDom {
             } else {
                 img = ImageIO.read(new File(imagePath));
             }
-            System.out.println("Sigma");
+
             if (img != null) {
-                return img.getHeight() / (img.getWidth() / imgNode.getParent().getWidth());
+                HashMap<String, String> styles = imgNode.getAppliedStyles();
+                if (styles.get("width") != null) {
+                    double styleWidth = Double.parseDouble(styles.get("width").replace("px", "").replace("%", "").trim());
+                    if (styles.get("width").contains("px")) {
+                        imgNode.setWidth(styleWidth);
+                        return img.getHeight() / (img.getWidth() / styleWidth);
+                    } else if (styles.get("width").contains("%")) {
+                        double nodeWidth = (imgNode.getParent().getWidth() / 100) * styleWidth;
+                        imgNode.setWidth(nodeWidth);
+                        return img.getHeight() / (img.getWidth() / nodeWidth);
+                    }
+                }
+                imgNode.setWidth(img.getWidth());
+                return img.getHeight();
             }
-            System.out.println("Sigma");
 
             return 0;
         } catch (IOException e) {
@@ -227,6 +244,55 @@ public class MergeCssomDom {
         }
     }
 
+    private double getSVGImageHeight(String imagePath, RenderNode imgNode) {
+        double[] size = getSVGSize(imagePath);
+        imgNode.setWidth(size[0]);
+        return size[1];
+    }
+
+    private double[] getSVGSize(String imagePath) {
+        try {
+            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
+            org.w3c.dom.Document doc;
+
+            if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+                URL url = new URL(imagePath);
+                doc = builder.parse(url.openStream());
+            } else {
+                doc = builder.parse(new File(imagePath));
+            }
+
+            org.w3c.dom.Element svgElement = doc.getDocumentElement();
+
+            String widthStr = svgElement.getAttribute("width");
+            String heightStr = svgElement.getAttribute("height");
+
+            double width = parseSize(widthStr);
+            double height = parseSize(heightStr);
+
+            if (width == 0 || height == 0) {
+                String viewBox = svgElement.getAttribute("viewBox");
+                if (!viewBox.isEmpty()) {
+                    String[] values = viewBox.split(" ");
+                    if (values.length == 4) {
+                        width = Double.parseDouble(values[2]);
+                        height = Double.parseDouble(values[3]);
+                    }
+                }
+            }
+
+            return new double[]{width, height};
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new double[]{0, 0};
+        }
+    }
+
+    private double parseSize(String size) {
+        if (size == null || size.isEmpty()) return 0;
+        return Double.parseDouble(size.replaceAll("[^0-9.]", ""));
+    }
 
     private double getMaxHeight(ArrayList<Double> heights) {
         double maxHeight = 0;

@@ -6,6 +6,7 @@ import org.example.model.css.cssom.CssTree;
 import org.example.model.html.HtmlElement;
 import org.example.model.html.HtmlParser;
 import org.example.model.renderTree.MergeCssomDom;
+import org.example.model.renderTree.RenderNode;
 import org.example.model.renderTree.RenderTree;
 import org.example.model.socket.HttpResponse;
 import org.example.model.socket.Socket;
@@ -45,6 +46,9 @@ public class Model {
         for (CssRule css : cssTree.getRules()) {
             cssParser.findCssOfHtml(dom, css.getSelector(), css);
         }
+        for (RenderNode renderTree1 : renderTree.getRoot().getChildren()) {
+        }
+
 
         return renderTree;
     }
