@@ -158,8 +158,4 @@ public class CssParser {
             findCssOfHtml(child, selectors, cssRule);
         }
     }
-
-    public CssTree getCssTree() {
-        return cssTree;
-    }
 }

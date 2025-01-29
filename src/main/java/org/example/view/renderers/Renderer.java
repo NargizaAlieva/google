@@ -1,13 +1,17 @@
 package org.example.view.renderers;
 
 import org.example.model.Model;
-import org.example.model.html.HtmlElement;
 import org.example.model.renderTree.RenderNode;
 import org.example.model.renderTree.RenderTree;
-import org.example.utils.Cursor;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.FontMetrics;
+import java.awt.Rectangle;
+import java.awt.Image;
+import java.awt.Color;
+import java.awt.Font;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +41,7 @@ public class Renderer {
     }
 
     private void renderElement(RenderNode node, String parentTag) {
-        drowRect(node);
+        drawRect(node);
         String tagToUse = node.getTagName().equals("text") ? parentTag : node.getTagName();
         System.out.println(tagToUse);
         renderers.getOrDefault(tagToUse, this::renderDefault).accept(node);
@@ -56,17 +60,24 @@ public class Renderer {
         renderers.put("h1", this::renderText);
         renderers.put("h2", this::renderText);
         renderers.put("h3", this::renderText);
+        renderers.put("h4", this::renderText);
+        renderers.put("h5", this::renderText);
+        renderers.put("h6", this::renderText);
+
         renderers.put("p", this::renderText);
         renderers.put("span", this::renderText);
+        renderers.put("em", this::renderText);
+        renderers.put("strong", this::renderText);
+        renderers.put("i", this::renderText);
+        renderers.put("b", this::renderText);
+        renderers.put("li", this::renderText);
+
         renderers.put("a", this::renderLink);
         renderers.put("ul", this::renderList);
-        renderers.put("li", this::renderText);
-        renderers.put("strong", this::renderText);
-        renderers.put("em", this::renderText);
         renderers.put("img", this::renderImage);
     }
 
-    private void drowRect(RenderNode node) {
+    private void drawRect(RenderNode node) {
         int width = (int) node.getWidth();
         int height = (int) node.getHeight();
 
@@ -77,9 +88,11 @@ public class Renderer {
         g2d.setColor(Color.black);
         String content = node.getTextContent();
 
-        if (!content.isEmpty()) {
+        cssRenderer.setFont(g2d, node);
 
-            g2d.drawString(content, node.getX(), node.getY());
+        if (!content.isEmpty()) {
+            g2d.drawString(content, node.getX(), node.getY() + g2d.getFont().getSize());
+            cssRenderer.resetFont(g2d);
         }
     }
 
@@ -103,6 +116,8 @@ public class Renderer {
         Font underlineFont = g2d.getFont().deriveFont(Font.PLAIN);
         g2d.setFont(underlineFont);
 
+        cssRenderer.setFont(g2d, node);
+
         FontMetrics fm = g2d.getFontMetrics();
 
         g2d.drawString(node.getTextContent(), node.getX(), node.getY());
@@ -110,16 +125,16 @@ public class Renderer {
 
         Rectangle clickableArea = new Rectangle(node.getX(), node.getY() - fm.getAscent(), fm.stringWidth(node.getTextContent()),
                 fm.getHeight());
-        linkAreas.add(new LinkArea(clickableArea, linkContent));
+        linkAreas.add(new LinkArea(clickableArea, linkContent, model.getBaseUrl()));
     }
 
     private void renderImageLink(RenderNode node, String linkContent) {
         try {
-            Image img = renderImage(node);
+            renderImage(node);
 
-            Rectangle clickableArea = new Rectangle(node.getX(), node.getY(), img.getWidth(null),
-                    img.getHeight(null));
-            linkAreas.add(new LinkArea(clickableArea, linkContent));
+            Rectangle clickableArea = new Rectangle(node.getX(), node.getY(), (int) node.getWidth(),
+                    (int) node.getHeight());
+            linkAreas.add(new LinkArea(clickableArea, linkContent, model.getBaseUrl()));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -132,18 +147,6 @@ public class Renderer {
             renderElement(child, child.getTagName());
         }
     }
-
-//    private Image renderImage(RenderNode node) {
-//        try {
-//            URL imgUrl = new URL(node.getTextContent());
-//            Image img = ImageIO.read(imgUrl);
-//            g2d.drawImage(img, node.getX(), node.getY(), null);
-//            return img;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
 
     private Image renderImage(RenderNode node) {
         try {
@@ -168,6 +171,8 @@ public class Renderer {
                 int scaledWidth = (int) (imgWidth * scale);
                 int scaledHeight = (int) (imgHeight * scale);
 
+                node.setHeight(scaledHeight);
+
                 g2d.drawImage(img, node.getX(), node.getY(), scaledWidth, scaledHeight, null);
             } else {
                 g2d.drawImage(img, node.getX(), node.getY(), imgWidth, imgHeight, null);
@@ -181,9 +186,7 @@ public class Renderer {
     }
 
 
-    private void renderDefault(RenderNode node) {
-        // renderText(element, "Serif", Font.PLAIN, 16, Color.BLACK, 20);
-    }
+    private void renderDefault(RenderNode node) {}
 
     public List<LinkArea> getLinkAreas() {
         return linkAreas;

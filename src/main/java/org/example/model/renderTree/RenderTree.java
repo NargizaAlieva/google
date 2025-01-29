@@ -22,10 +22,6 @@ public class RenderTree {
         return windowWidth;
     }
 
-    public void setWindowWidth(int windowWidth) {
-        this.windowWidth = windowWidth;
-    }
-
     public int getWindowHeight() {
         return windowHeight;
     }

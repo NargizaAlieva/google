@@ -1,6 +1,5 @@
 package org.example.model.html;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HtmlParser {
-    public HtmlElement parseHtml(String html, URL url){
+    public HtmlElement parseHtml(String html, String url){
         HtmlElement root = new HtmlElement("root", "");
         List<HtmlElement> stack = new ArrayList<>();
         stack.add(root);
@@ -34,11 +33,11 @@ public class HtmlParser {
 
                     if (tagName.equals("img")) {
                         String src = extractAttribute(tag, "src");
-                        if (src.startsWith("http")) {
+                        if (src.startsWith("http") || src.startsWith("https")) {
                             element.setContent(src);
                         } else {
                             if (url != null) {
-                                element.setContent(getBaseUrl(url) + src);
+                                element.setContent(url + src);
                             } else {
                                 element.setContent(src);
                             }
@@ -67,32 +66,9 @@ public class HtmlParser {
 
         return root;
     }
-    private String getBaseUrl(URL url) {
-        String protocol = url.getProtocol();
-        String host = url.getHost();
-        int port = url.getPort();
-
-        if (port != -1 && port != 80 && port != 443) {
-            return protocol + "://" + host + ":" + port;
-        }
-
-        return protocol + "://" + host;
-    }
 
     private static boolean isSelfClosingTag(String tagName) {
         return tagName.equals("img") || tagName.equals("br") || tagName.equals("hr") || tagName.equals("input") || tagName.equals("meta") || tagName.equals("link");
-    }
-
-    public static List<String> extractLinks(String html) {
-        List<String> links = new ArrayList<>();
-        Pattern linkPattern = Pattern.compile("<a\\s+[^>]*href=\"([^\"]+)\"[^>]*>", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = linkPattern.matcher(html);
-
-        while (matcher.find()) {
-            links.add(matcher.group(1));
-        }
-
-        return links;
     }
 
     private static String extractAttribute(String tag, String attributeName) {

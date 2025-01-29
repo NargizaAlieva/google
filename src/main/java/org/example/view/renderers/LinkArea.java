@@ -6,19 +6,17 @@ import java.net.URI;
 
 public class LinkArea {
     private final Rectangle area;
-    private final String url;
+    private String url;
 
-    public LinkArea(Rectangle area, String url) {
+    public LinkArea(Rectangle area, String url, String baseUrl) {
         this.area = area;
         this.url = url;
+        setUrl(baseUrl);
     }
 
-    public Rectangle getArea() {
-        return area;
-    }
-
-    public String getUrl() {
-        return url;
+    public void setUrl(String baseUrl) {
+        if (!(url.startsWith("http") && url.startsWith("https")))
+            url = baseUrl + url;
     }
 
     public boolean contains(int x, int y) {

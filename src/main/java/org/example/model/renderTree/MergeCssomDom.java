@@ -5,8 +5,12 @@ import org.example.model.css.cssom.CssTree;
 import org.example.model.html.HtmlElement;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+
+import java.awt.Font;
+import java.awt.Canvas;
+import java.awt.FontMetrics;
 import java.awt.image.BufferedImage;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -257,24 +261,16 @@ public class MergeCssomDom {
     }
 
     private void setHeightOfText(RenderNode renderNode) {
-        // Получаем текст из узла
         String textContent = renderNode.getTextContent();
         if (textContent == null || textContent.isEmpty()) {
             return;
         }
 
-        // Получаем имя тега
-        String tagName = renderNode.getTagName();
-
-        // Устанавливаем шрифт и размер по умолчанию
         String fontName = renderNode.getAppliedStyles().getOrDefault("font-family", "Arial");
         int fontSize;
 
-        // Используем размер шрифта из стилей или значение по умолчанию
         fontSize = Integer.parseInt(renderNode.getAppliedStyles().getOrDefault("font-size", "12").replace("px", "").trim());
 
-
-        // Устанавливаем стиль шрифта (по умолчанию - обычный)
         int fontStyle = Font.PLAIN;
         String fontWeight = renderNode.getAppliedStyles().getOrDefault("font-weight", "normal");
         if (fontWeight.equalsIgnoreCase("bold")) {
@@ -402,13 +398,11 @@ public class MergeCssomDom {
         int height = renderTree.getWindowHeight();
         int width = renderTree.getWindowWidth();
 
-        // Разделяем медиа-запросы на отдельные условия
         String[] conditions = media.split("and");
 
         for (String condition : conditions) {
             condition = condition.trim();
 
-            // Извлекаем ключ-значение из каждого условия
             Pattern pattern = Pattern.compile("\\(([^)]*)\\)");
             Matcher matcher = pattern.matcher(condition);
 
@@ -417,7 +411,6 @@ public class MergeCssomDom {
                 String[] listOfKeyValue = keyValue.split(":", 2);
 
                 if (listOfKeyValue.length != 2) {
-                    // Если условие некорректное, возвращаем false
                     return false;
                 }
 
@@ -428,7 +421,6 @@ public class MergeCssomDom {
                 try {
                     cssValue = Integer.parseInt(value.replace("px", "").replace("%", "").trim());
                 } catch (NumberFormatException e) {
-                    // Пропускаем некорректные значения
                     return false;
                 }
 
@@ -460,16 +452,13 @@ public class MergeCssomDom {
                         }
                         break;
                     default:
-                        // Неизвестное условие
                         return false;
                 }
             } else {
-                // Если условие не подходит под шаблон
                 return false;
             }
         }
 
-        // Если все условия выполнены
         return true;
     }
 
@@ -490,7 +479,6 @@ public class MergeCssomDom {
         HashMap<String, String> styles = new HashMap<>(cssRule.getPropertiesMap());
 
         Set<String> allowedStyles = Set.of(
-                // Размеры и отступы
                 "width", "height", "min-width", "max-width", "min-height", "max-height",
                 "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
                 "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
@@ -499,42 +487,34 @@ public class MergeCssomDom {
                 "border-radius",
                 "outline", "outline-width", "outline-color", "outline-style",
 
-                // Цвета и фон
                 "color", "background", "background-color", "background-image",
                 "background-size", "background-position", "background-repeat",
 
-                // Шрифты и текст
                 "font-size", "font-family", "font-weight", "font-style", "font-variant",
                 "line-height", "letter-spacing", "word-spacing",
                 "text-align", "text-indent", "text-decoration", "text-transform",
                 "white-space", "vertical-align",
 
-                // Расположение и отображение
                 "display", "visibility", "z-index", "position",
                 "top", "right", "bottom", "left", "overflow",
                 "overflow-x", "overflow-y", "float", "clear",
 
-                // Тени и градиенты
                 "box-shadow", "text-shadow",
 
-                // Переходы и анимации
                 "transition", "transition-property", "transition-duration",
                 "transition-timing-function", "transition-delay",
                 "animation", "animation-name", "animation-duration",
                 "animation-timing-function", "animation-delay",
                 "animation-iteration-count", "animation-direction",
 
-                // Flexbox
                 "flex", "flex-grow", "flex-shrink", "flex-basis",
                 "justify-content", "align-items", "align-self",
                 "align-content", "order",
 
-                // Grid
                 "grid-template-rows", "grid-template-columns", "grid-template-areas",
                 "grid-gap", "grid-row", "grid-column", "grid-area",
                 "justify-items", "justify-self", "place-items",
 
-                // Другие свойства
                 "cursor", "clip", "opacity", "content", "quotes"
         );
 
