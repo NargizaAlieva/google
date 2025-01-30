@@ -15,6 +15,7 @@ import java.awt.Font;
 import java.awt.Color;
 
 public class Viewer extends JFrame {
+    private static final long serialVersionUID = 1L;
     private final Canvas canvas;
     private final Controller controller;
     private JTextField jTextField;

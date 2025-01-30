@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Canvas extends JPanel {
+    private static final long serialVersionUID = 1L;
     private final Model model;
     private final Renderer renderer;
     private final List<LinkArea> linkAreas;
