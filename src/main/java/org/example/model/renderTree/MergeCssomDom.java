@@ -108,8 +108,6 @@ public class MergeCssomDom {
 
         for (RenderNode child : renderNode.getChildren()) {
             HashMap<String, String> styles = child.getAppliedStyles();
-
-            // Получаем margin и padding для всех сторон
             double marginTop = parseStyleValue(styles.getOrDefault("margin-top", "0px"), parentRemainWidth);
             double marginBottom = parseStyleValue(styles.getOrDefault("margin-bottom", "0px"), parentRemainWidth);
             double marginLeft = parseStyleValue(styles.getOrDefault("margin-left", "0px"), parentRemainWidth);
@@ -120,10 +118,10 @@ public class MergeCssomDom {
             double paddingRight = parseStyleValue(styles.getOrDefault("padding-right", "0px"), parentRemainWidth);
 
             if (parentRemainWidth >= child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight) {
-                child.setX(lastX + marginLeft + paddingLeft); // Учитываем margin-left и padding-left
+                child.setX(lastX + marginLeft + paddingLeft);
                 child.setY(lastY + marginTop + paddingTop);
 
-                lastX += child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight; // Обновляем lastX с учетом отступов
+                lastX += child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight;
                 parentRemainWidth -= child.getWidth() + marginLeft + marginRight + paddingLeft + paddingRight;
 
                 rowHeight = Math.max(rowHeight, child.getHeight() + marginTop + marginBottom + paddingTop + paddingBottom);
@@ -207,7 +205,6 @@ public class MergeCssomDom {
             return 0;
         }
 
-        // Проверяем, является ли изображение SVG
         if (imagePath.toLowerCase().endsWith(".svg")) {
             return getSVGImageHeight(imagePath, imgNode);
         }
@@ -308,7 +305,6 @@ public class MergeCssomDom {
         return maxHeight;
     }
 
-
     private void hTagsInHeight(RenderNode rootRenderNode) {
         for (RenderNode child : rootRenderNode.getChildren()) {
             if (tagSize.get(child.getTagName()) != null) {
@@ -328,8 +324,6 @@ public class MergeCssomDom {
         };
     }
 
-
-
     private void createRenderTree(HtmlElement htmlElement, RenderNode parentRenderNode) {
         for (HtmlElement child : htmlElement.getChildren()) {
             RenderNode renderNode = new RenderNode(child.getTag());
@@ -340,8 +334,6 @@ public class MergeCssomDom {
             createRenderTree(child, renderNode);
         }
     }
-
-
 
     private void setWidthHeightToChildren(RenderNode renderNode) {
         for (RenderNode child : renderNode.getChildren()) {
@@ -369,25 +361,19 @@ public class MergeCssomDom {
     }
 
     private void setHeightOfText(RenderNode renderNode) {
-        // Получаем текст из узла
         String textContent = renderNode.getTextContent();
         if (textContent == null || textContent.isEmpty()) {
             return;
         }
 
-        // Получаем имя тега
         @SuppressWarnings("unused")
         String tagName = renderNode.getTagName();
 
-        // Устанавливаем шрифт и размер по умолчанию
         String fontName = renderNode.getAppliedStyles().getOrDefault("font-family", "Arial");
         int fontSize;
 
-        // Используем размер шрифта из стилей или значение по умолчанию
         fontSize = Integer.parseInt(renderNode.getAppliedStyles().getOrDefault("font-size", "12").replace("px", "").trim());
 
-
-        // Устанавливаем стиль шрифта (по умолчанию - обычный)
         int fontStyle = Font.PLAIN;
         String fontWeight = renderNode.getAppliedStyles().getOrDefault("font-weight", "normal");
         if (fontWeight.equalsIgnoreCase("bold")) {
@@ -515,13 +501,11 @@ public class MergeCssomDom {
         int height = renderTree.getWindowHeight();
         int width = renderTree.getWindowWidth();
 
-        // Разделяем медиа-запросы на отдельные условия
         String[] conditions = media.split("and");
 
         for (String condition : conditions) {
             condition = condition.trim();
 
-            // Извлекаем ключ-значение из каждого условия
             Pattern pattern = Pattern.compile("\\(([^)]*)\\)");
             Matcher matcher = pattern.matcher(condition);
 
@@ -530,7 +514,6 @@ public class MergeCssomDom {
                 String[] listOfKeyValue = keyValue.split(":", 2);
 
                 if (listOfKeyValue.length != 2) {
-                    // Если условие некорректное, возвращаем false
                     return false;
                 }
 
@@ -541,7 +524,6 @@ public class MergeCssomDom {
                 try {
                     cssValue = Integer.parseInt(value.replace("px", "").replace("%", "").trim());
                 } catch (NumberFormatException e) {
-                    // Пропускаем некорректные значения
                     return false;
                 }
 
@@ -573,16 +555,12 @@ public class MergeCssomDom {
                         }
                         break;
                     default:
-                        // Неизвестное условие
                         return false;
                 }
             } else {
-                // Если условие не подходит под шаблон
                 return false;
             }
         }
-
-        // Если все условия выполнены
         return true;
     }
 

@@ -26,6 +26,10 @@ public class RenderTree {
         return windowHeight;
     }
 
+    public void setWindowWidth(int windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
     public void setWindowHeight(int windowHeight) {
         if (this.windowHeight < windowHeight)
             this.windowHeight = windowHeight;

@@ -1,4 +1,5 @@
 package org.example.model.socket;
+
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.BufferedReader;

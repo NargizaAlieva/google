@@ -46,7 +46,8 @@ public class Renderer {
         System.out.println(tagToUse);
         renderers.getOrDefault(tagToUse, this::renderDefault).accept(node);
 
-        if (node.getTextContent() != null && node.getTextContent().isEmpty() && !node.getChildren().isEmpty() && !node.getTagName().equals("ul")) {
+        if (node.getTextContent() != null && node.getTextContent().isEmpty()
+                && !node.getChildren().isEmpty() && !node.getTagName().equals("ul")) {
             for (RenderNode child : node.getChildren()) {
                 renderElement(child, node.getTagName());
             }
@@ -81,7 +82,12 @@ public class Renderer {
         int width = (int) node.getWidth();
         int height = (int) node.getHeight();
 
+        Color originalColor = g2d.getColor();
+
+        g2d.setColor(new Color(0, 0, 0, 0));
         g2d.drawRect(node.getX(), node.getY() - g2d.getFontMetrics().getHeight(), width, height);
+
+        g2d.setColor(originalColor);
     }
 
     private void renderText(RenderNode node) {
@@ -91,7 +97,7 @@ public class Renderer {
         cssRenderer.setFont(g2d, node);
 
         if (!content.isEmpty()) {
-            g2d.drawString(content, node.getX(), node.getY() + g2d.getFont().getSize());
+            g2d.drawString(content, node.getX(), node.getY());
             cssRenderer.resetFont(g2d);
         }
     }
