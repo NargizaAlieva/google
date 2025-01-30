@@ -80,6 +80,8 @@ public class MergeCssomDom {
 
         return renderTree;
     }
+
+    @SuppressWarnings("unused")
     private void finalCalculationOfWidth(RenderNode rootRenderNode) {
         double currentWidth = 0;
         if (!blockElements.contains(rootRenderNode.getTagName())){
@@ -214,6 +216,7 @@ public class MergeCssomDom {
             BufferedImage img;
 
             if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+                @SuppressWarnings("deprecation")
                 URL url = new URL(imagePath);
                 img = ImageIO.read(url);
             } else {
@@ -257,6 +260,7 @@ public class MergeCssomDom {
             org.w3c.dom.Document doc;
 
             if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+                @SuppressWarnings("deprecation")
                 URL url = new URL(imagePath);
                 doc = builder.parse(url.openStream());
             } else {
@@ -372,6 +376,7 @@ public class MergeCssomDom {
         }
 
         // Получаем имя тега
+        @SuppressWarnings("unused")
         String tagName = renderNode.getTagName();
 
         // Устанавливаем шрифт и размер по умолчанию

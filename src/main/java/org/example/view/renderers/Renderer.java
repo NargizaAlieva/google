@@ -148,6 +148,7 @@ public class Renderer {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private Image renderImage(RenderNode node) {
         try {
             String content = node.getTextContent();

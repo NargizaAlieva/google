@@ -17,6 +17,7 @@ public class Socket {
     private static final int MAX_REDIRECTS = 5;
     private URL url;
 
+    @SuppressWarnings("deprecation")
     public HttpResponse fetchHtmlWithCss(String urlString) {
         try {
             url = new URL(urlString);

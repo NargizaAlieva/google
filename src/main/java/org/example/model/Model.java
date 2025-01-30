@@ -46,7 +46,7 @@ public class Model {
         for (CssRule css : cssTree.getRules()) {
             cssParser.findCssOfHtml(dom, css.getSelector(), css);
         }
-        for (RenderNode renderTree1 : renderTree.getRoot().getChildren()) {
+        for (@SuppressWarnings("unused") RenderNode renderTree1 : renderTree.getRoot().getChildren()) {
         }
 
 
