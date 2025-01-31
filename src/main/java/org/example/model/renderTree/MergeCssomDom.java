@@ -210,15 +210,8 @@ public class MergeCssomDom {
         }
 
         try {
-            BufferedImage img;
-
-            if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-                @SuppressWarnings("deprecation")
-                URL url = new URL(imagePath);
-                img = ImageIO.read(url);
-            } else {
-                img = ImageIO.read(new File(imagePath));
-            }
+            URL url = new URL(imagePath);
+            BufferedImage img = ImageIO.read(url);
 
             if (img != null) {
                 HashMap<String, String> styles = imgNode.getAppliedStyles();
@@ -461,13 +454,6 @@ public class MergeCssomDom {
                 if (selectors.isEmpty()) {
                     if (cssRule.getMedia() == null && cssRule.getMedia().isEmpty()){
                         computeStyles(cssRule, renderNode);
-                    }  else {
-                        System.out.println(matchMedia(cssRule.getMedia()));
-                        System.out.println("hello world");
-                        System.out.println(cssRule.getMedia());
-                        if (matchMedia(cssRule.getMedia())){
-                            System.out.println("Miside");
-                        }
                     }
                     return;
                 }

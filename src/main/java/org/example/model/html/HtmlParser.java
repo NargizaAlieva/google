@@ -36,7 +36,9 @@ public class HtmlParser {
                             element.setContent(src);
                         } else {
                             if (url != null) {
-                                element.setContent(url + src);
+                                src = url + src;
+                                src = src.replace(" ", "%20");
+                                element.setContent(src);
                             } else {
                                 element.setContent(src);
                             }
@@ -44,6 +46,7 @@ public class HtmlParser {
                         }
                     } else if (tagName.equals("a")) {
                         String href = extractAttribute(tag, "href");
+                        href = href.replace(" ", "%20");
                         element.setContent(href);
                     }
 
@@ -65,41 +68,6 @@ public class HtmlParser {
 
         return root;
     }
-
-    private static boolean isSelfClosingTag(String tagName) {
-        return tagName.equals("img") || tagName.equals("br") || tagName.equals("hr") || tagName.equals("input") || tagName.equals("meta") || tagName.equals("link");
-    }
-
-    private static String extractAttribute(String tag, String attributeName) {
-        String pattern = attributeName + "=\"([^\"]*)\"";
-        Pattern attrPattern = Pattern.compile(pattern);
-        Matcher attrMatcher = attrPattern.matcher(tag);
-        if (attrMatcher.find()) {
-            return attrMatcher.group(1);
-        }
-        return null;
-    }
-
-    private static String[] extractClasses(String tag) {
-        String pattern = "class=\"([^\"]*)\"";
-        Pattern classPattern = Pattern.compile(pattern);
-        Matcher classMatcher = classPattern.matcher(tag);
-        if (classMatcher.find()) {
-            return classMatcher.group(1).split("\\s+");
-        }
-        return null;
-    }
-
-    private static String[] extractIds(String tag) {
-        String pattern = "id=\"([^\"]*)\"";
-        Pattern idPattern = Pattern.compile(pattern);
-        Matcher idMatcher = idPattern.matcher(tag);
-        if (idMatcher.find()) {
-            return idMatcher.group(1).split("\\s+");
-        }
-        return null;
-    }
-
     private static void extractStyles(String tag, HtmlElement element) {
         String pattern = "style=\"([^\"]*)\"";
         Pattern stylePattern = Pattern.compile(pattern);
@@ -116,4 +84,37 @@ public class HtmlParser {
             }
         }
     }
+    private static String[] extractIds(String tag) {
+        String pattern = "id=\"([^\"]*)\"";
+        Pattern idPattern = Pattern.compile(pattern);
+        Matcher idMatcher = idPattern.matcher(tag);
+        if (idMatcher.find()) {
+            return idMatcher.group(1).split("\\s+");
+        }
+        return null;
+    }
+    private static String extractAttribute(String tag, String attributeName) {
+        String pattern = attributeName + "=\"([^\"]*)\"";
+        Pattern attrPattern = Pattern.compile(pattern);
+        Matcher attrMatcher = attrPattern.matcher(tag);
+        if (attrMatcher.find()) {
+            return attrMatcher.group(1);
+        }
+        return null;
+    }
+
+    private static boolean isSelfClosingTag(String tagName) {
+        return tagName.equals("img") || tagName.equals("br") || tagName.equals("hr") || tagName.equals("input") || tagName.equals("meta") || tagName.equals("link");
+    }
+
+    private static String[] extractClasses(String tag) {
+        String pattern = "class=\"([^\"]*)\"";
+        Pattern classPattern = Pattern.compile(pattern);
+        Matcher classMatcher = classPattern.matcher(tag);
+        if (classMatcher.find()) {
+            return classMatcher.group(1).split("\\s+");
+        }
+        return null;
+    }
+
 }

@@ -23,12 +23,14 @@ public class Controller implements ActionListener {
         this.viewer = viewer;
         model = new Model(viewer);
         setupCommands();
+
     }
 
     public void attachCanvasMouseEvents(Canvas canvas) {
         renderer = canvas.getRenderer();
         canvas.addMouseListener(new CanvasMouseListener(this));
         canvas.addMouseMotionListener(new LinkHoverHandler(this));
+        viewer.getCanvas().addMouseWheelListener(new Scroll(viewer.getCanvas()));
     }
 
     @Override
@@ -55,7 +57,7 @@ public class Controller implements ActionListener {
             if (linkArea.contains(x, y)) {
                 viewer.setNewUrl(linkArea.getUrl());
                 commandMap.get("Search").execute();
-                linkArea.openUrlInBrowser();
+//                linkArea.openUrlInBrowser();
                 break;
             }
         }

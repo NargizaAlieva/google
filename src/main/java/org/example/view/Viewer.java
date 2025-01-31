@@ -6,7 +6,6 @@ import org.example.model.Model;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.JScrollPane;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 
@@ -33,8 +32,10 @@ public class Viewer extends JFrame {
         setLocationRelativeTo(null);
 
         createSearchField();
-        JScrollPane scrollPane = new JScrollPane(canvas);
-        add(scrollPane, BorderLayout.CENTER);
+
+        add(canvas, BorderLayout.CENTER);
+
+
         setVisible(true);
     }
 
