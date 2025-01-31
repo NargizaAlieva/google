@@ -65,6 +65,22 @@ public class HtmlParser {
 
         return root;
     }
+    private static void extractStyles(String tag, HtmlElement element) {
+        String pattern = "style=\"([^\"]*)\"";
+        Pattern stylePattern = Pattern.compile(pattern);
+        Matcher styleMatcher = stylePattern.matcher(tag);
+        if (styleMatcher.find()) {
+            String[] properties = styleMatcher.group(1).trim().split(";");
+            for (String property : properties) {
+                String[] keyValue = property.split(":", 2);
+                if (keyValue.length == 2) {
+                    String key = keyValue[0].trim();
+                    String value = keyValue[1].trim();
+                    element.setStyles(key, value);
+                }
+            }
+        }
+    }
     private static String[] extractIds(String tag) {
         String pattern = "id=\"([^\"]*)\"";
         Pattern idPattern = Pattern.compile(pattern);
@@ -87,24 +103,6 @@ public class HtmlParser {
     private static boolean isSelfClosingTag(String tagName) {
         return tagName.equals("img") || tagName.equals("br") || tagName.equals("hr") || tagName.equals("input") || tagName.equals("meta") || tagName.equals("link");
     }
-    private static void extractStyles(String tag, HtmlElement element) {
-        String pattern = "style=\"([^\"]*)\"";
-        Pattern stylePattern = Pattern.compile(pattern);
-        Matcher styleMatcher = stylePattern.matcher(tag);
-        if (styleMatcher.find()) {
-            String[] properties = styleMatcher.group(1).trim().split(";");
-            for (String property : properties) {
-                String[] keyValue = property.split(":", 2);
-                if (keyValue.length == 2) {
-                    String key = keyValue[0].trim();
-                    String value = keyValue[1].trim();
-                    element.setStyles(key, value);
-                }
-            }
-        }
-    }
-
-
 
     private static String[] extractClasses(String tag) {
         String pattern = "class=\"([^\"]*)\"";
@@ -115,6 +113,5 @@ public class HtmlParser {
         }
         return null;
     }
-
 
 }

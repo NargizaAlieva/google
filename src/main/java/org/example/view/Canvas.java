@@ -1,6 +1,5 @@
 package org.example.view;
 
-import org.example.controller.Scroll;
 import org.example.model.Model;
 import org.example.model.renderTree.RenderTree;
 import org.example.view.renderers.LinkArea;
@@ -11,8 +10,6 @@ import java.awt.Dimension;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.MouseWheelListener;
-import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +61,7 @@ public class Canvas extends JPanel {
             revalidate();
         }
     }
+
     private void updateLinkAreas() {
         linkAreas.clear();
         linkAreas.addAll(renderer.getLinkAreas());
