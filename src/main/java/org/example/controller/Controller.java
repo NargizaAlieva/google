@@ -53,6 +53,8 @@ public class Controller implements ActionListener {
 
         for (LinkArea linkArea : renderer.getLinkAreas()) {
             if (linkArea.contains(x, y)) {
+                viewer.setNewUrl(linkArea.getUrl());
+                commandMap.get("Search").execute();
                 linkArea.openUrlInBrowser();
                 break;
             }

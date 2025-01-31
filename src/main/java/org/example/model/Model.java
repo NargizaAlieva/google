@@ -34,7 +34,7 @@ public class Model {
     public void getHtml(String siteUrl) {
         viewer.getController().clearLinkAreas();
         httpResponse = socket.fetchHtmlWithCss(siteUrl);
-        viewer.update();
+        viewer.getCanvas().repaint();
     }
 
     public RenderTree parse() {

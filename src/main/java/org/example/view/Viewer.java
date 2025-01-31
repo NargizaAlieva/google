@@ -71,11 +71,19 @@ public class Viewer extends JFrame {
         add(searchPanel, BorderLayout.NORTH);
     }
 
+    public void setNewUrl(String url) {
+        jTextField.setText(url);
+    }
+
     public String getSiteUrl() {
         return jTextField.getText();
     }
 
     public Controller getController() {
         return controller;
+    }
+
+    public Canvas getCanvas() {
+        return canvas;
     }
 }

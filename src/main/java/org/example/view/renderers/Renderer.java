@@ -43,7 +43,6 @@ public class Renderer {
     private void renderElement(RenderNode node, String parentTag) {
         drawRect(node);
         String tagToUse = node.getTagName().equals("text") ? parentTag : node.getTagName();
-        System.out.println(tagToUse);
         renderers.getOrDefault(tagToUse, this::renderDefault).accept(node);
 
         if (node.getTextContent() != null && node.getTextContent().isEmpty()
