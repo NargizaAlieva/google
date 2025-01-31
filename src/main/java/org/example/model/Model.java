@@ -22,6 +22,7 @@ public class Model {
     private final CssParser cssParser;
     private HttpResponse httpResponse;
     private MergeCssomDom mergeCssomDom;
+    private boolean isUrlChanged;
 
     public Model(Viewer viewer) {
         this.viewer = viewer;
@@ -34,6 +35,7 @@ public class Model {
     public void getHtml(String siteUrl) {
         viewer.getController().clearLinkAreas();
         httpResponse = socket.fetchHtmlWithCss(siteUrl);
+        isUrlChanged = true;
         viewer.update();
     }
 
@@ -46,9 +48,8 @@ public class Model {
         for (CssRule css : cssTree.getRules()) {
             cssParser.findCssOfHtml(dom, css.getSelector(), css);
         }
-        for (@SuppressWarnings("unused") RenderNode renderTree1 : renderTree.getRoot().getChildren()) {
-        }
 
+        isUrlChanged = false;
 
         return renderTree;
     }
@@ -70,5 +71,9 @@ public class Model {
 
     public String getBaseUrl() {
         return socket.getBaseUrl();
+    }
+
+    public boolean getIsUrlChanged() {
+        return isUrlChanged;
     }
 }
