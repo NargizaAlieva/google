@@ -46,7 +46,6 @@ public class HtmlParser {
                         }
                     } else if (tagName.equals("a")) {
                         String href = extractAttribute(tag, "href");
-                        href = href.replace(" ", "%20");
                         element.setContent(href);
                     }
 

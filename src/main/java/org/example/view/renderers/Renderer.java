@@ -183,7 +183,7 @@ public class Renderer {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.getMessage();
         }
     }
 

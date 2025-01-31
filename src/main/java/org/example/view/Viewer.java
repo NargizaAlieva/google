@@ -3,15 +3,9 @@ package org.example.view;
 import org.example.controller.Controller;
 import org.example.model.Model;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
+import javax.swing.*;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.Color;
+import java.awt.*;
 
 public class Viewer extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -22,7 +16,8 @@ public class Viewer extends JFrame {
     public Viewer() {
         controller = new Controller(this);
         Model model = controller.getModel();
-        canvas = new Canvas(model);
+        ScrollPanel scrollPanel = new ScrollPanel();
+        canvas = new Canvas(model, scrollPanel);
 
         controller.attachCanvasMouseEvents(canvas);
 
@@ -34,13 +29,10 @@ public class Viewer extends JFrame {
         createSearchField();
 
         add(canvas, BorderLayout.CENTER);
+        add(scrollPanel, BorderLayout.EAST);
 
 
         setVisible(true);
-    }
-
-    public void update() {
-        canvas.repaint();
     }
 
     private void createSearchField() {
@@ -72,10 +64,6 @@ public class Viewer extends JFrame {
         add(searchPanel, BorderLayout.NORTH);
     }
 
-    public void setNewUrl(String url) {
-        jTextField.setText(url);
-    }
-
     public String getSiteUrl() {
         return jTextField.getText();
     }
@@ -86,5 +74,9 @@ public class Viewer extends JFrame {
 
     public Canvas getCanvas() {
         return canvas;
+    }
+
+    public void setNewUrl(String url) {
+        jTextField.setText(url);
     }
 }
