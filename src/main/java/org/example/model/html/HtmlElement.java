@@ -9,7 +9,7 @@ public class HtmlElement {
     private String content;
     private String[] classes;
     private String[] ids;
-    private HashMap<String, String> styles;
+    private final HashMap<String, String> styles;
     private List<HtmlElement> children;
 
     public HtmlElement(String tag, String content) {
@@ -23,6 +23,7 @@ public class HtmlElement {
     public HashMap<String, String> getStyles() {
         return styles;
     }
+
     public void setStyles(String key, String value) {
         this.styles.put(key, value);
     }

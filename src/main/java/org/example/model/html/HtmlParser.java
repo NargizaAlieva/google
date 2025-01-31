@@ -65,11 +65,15 @@ public class HtmlParser {
 
         return root;
     }
-
-    private static boolean isSelfClosingTag(String tagName) {
-        return tagName.equals("img") || tagName.equals("br") || tagName.equals("hr") || tagName.equals("input") || tagName.equals("meta") || tagName.equals("link");
+    private static String[] extractIds(String tag) {
+        String pattern = "id=\"([^\"]*)\"";
+        Pattern idPattern = Pattern.compile(pattern);
+        Matcher idMatcher = idPattern.matcher(tag);
+        if (idMatcher.find()) {
+            return idMatcher.group(1).split("\\s+");
+        }
+        return null;
     }
-
     private static String extractAttribute(String tag, String attributeName) {
         String pattern = attributeName + "=\"([^\"]*)\"";
         Pattern attrPattern = Pattern.compile(pattern);
@@ -80,26 +84,9 @@ public class HtmlParser {
         return null;
     }
 
-    private static String[] extractClasses(String tag) {
-        String pattern = "class=\"([^\"]*)\"";
-        Pattern classPattern = Pattern.compile(pattern);
-        Matcher classMatcher = classPattern.matcher(tag);
-        if (classMatcher.find()) {
-            return classMatcher.group(1).split("\\s+");
-        }
-        return null;
+    private static boolean isSelfClosingTag(String tagName) {
+        return tagName.equals("img") || tagName.equals("br") || tagName.equals("hr") || tagName.equals("input") || tagName.equals("meta") || tagName.equals("link");
     }
-
-    private static String[] extractIds(String tag) {
-        String pattern = "id=\"([^\"]*)\"";
-        Pattern idPattern = Pattern.compile(pattern);
-        Matcher idMatcher = idPattern.matcher(tag);
-        if (idMatcher.find()) {
-            return idMatcher.group(1).split("\\s+");
-        }
-        return null;
-    }
-
     private static void extractStyles(String tag, HtmlElement element) {
         String pattern = "style=\"([^\"]*)\"";
         Pattern stylePattern = Pattern.compile(pattern);
@@ -116,4 +103,18 @@ public class HtmlParser {
             }
         }
     }
+
+
+
+    private static String[] extractClasses(String tag) {
+        String pattern = "class=\"([^\"]*)\"";
+        Pattern classPattern = Pattern.compile(pattern);
+        Matcher classMatcher = classPattern.matcher(tag);
+        if (classMatcher.find()) {
+            return classMatcher.group(1).split("\\s+");
+        }
+        return null;
+    }
+
+
 }

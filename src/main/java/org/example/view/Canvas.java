@@ -1,5 +1,6 @@
 package org.example.view;
 
+import org.example.controller.Scroll;
 import org.example.model.Model;
 import org.example.model.renderTree.RenderTree;
 import org.example.view.renderers.LinkArea;
@@ -10,6 +11,8 @@ import java.awt.Dimension;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,12 +22,17 @@ public class Canvas extends JPanel {
     private RenderTree renderTree;
     private final Renderer renderer;
     private final List<LinkArea> linkAreas;
+    private int scrollOffsetY;
+    private int maxScrollOffsetY;
+
 
     public Canvas(Model model) {
         this.model = model;
 
         renderer = new Renderer(model);
         linkAreas = new ArrayList<>();
+        scrollOffsetY = 0;
+
     }
 
     @Override
@@ -40,6 +48,7 @@ public class Canvas extends JPanel {
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
+        g2d.translate(0, -scrollOffsetY);
         if (model.getHttpResponse() != null) {
             g2d.setColor(Color.WHITE);
             g2d.fillRect(0, 0, getWidth(), getHeight());
@@ -50,16 +59,35 @@ public class Canvas extends JPanel {
             renderer.renderElement(g2d, renderTree);
 
             updateLinkAreas();
+            updateMaxScrollOffset();
+
             revalidate();
         }
+    }
+    private void updateLinkAreas() {
+        linkAreas.clear();
+        linkAreas.addAll(renderer.getLinkAreas());
+    }
+
+    private void updateMaxScrollOffset() {
+        int contentHeight = renderer.getCanvasHeight();
+        int visibleHeight = getHeight();
+        maxScrollOffsetY = Math.max(0, contentHeight - visibleHeight);
     }
 
     public Renderer getRenderer() {
         return renderer;
     }
 
-    private void updateLinkAreas() {
-        linkAreas.clear();
-        linkAreas.addAll(renderer.getLinkAreas());
+    public int getMaxScrollOffsetY() {
+        return maxScrollOffsetY;
+    }
+
+    public int getScrollOffsetY() {
+        return scrollOffsetY;
+    }
+
+    public void setScrollOffsetY(int scrollOffsetY) {
+        this.scrollOffsetY = scrollOffsetY;
     }
 }

@@ -3,16 +3,9 @@ package org.example.view;
 import org.example.controller.Controller;
 import org.example.model.Model;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JScrollPane;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
+import javax.swing.*;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.Color;
+import java.awt.*;
 
 public class Viewer extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -33,8 +26,10 @@ public class Viewer extends JFrame {
         setLocationRelativeTo(null);
 
         createSearchField();
-        JScrollPane scrollPane = new JScrollPane(canvas);
-        add(scrollPane, BorderLayout.CENTER);
+
+        add(canvas, BorderLayout.CENTER);
+
+
         setVisible(true);
     }
 
@@ -77,5 +72,9 @@ public class Viewer extends JFrame {
 
     public Controller getController() {
         return controller;
+    }
+
+    public Canvas getCanvas() {
+        return canvas;
     }
 }
